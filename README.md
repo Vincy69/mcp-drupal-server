@@ -99,7 +99,7 @@ Add to your Claude Desktop configuration file:
   "mcpServers": {
     "drupal-god-mod": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-drupal-god-mod/dist/index.js"],
+      "args": ["/absolute/path/to/mcp-drupal-server/dist/index.js"],
       "env": {
         "DRUPAL_BASE_URL": "https://your-site.com",
         "DRUPAL_USERNAME": "admin",
@@ -117,32 +117,61 @@ Add to your Claude Desktop configuration file:
 Create a `CLAUDE.md` file in your Drupal project root:
 
 ```markdown
-# Drupal Development with God Mod
+# 🚀 Drupal Development with MCP God Mod
 
-You have access to the MCP Drupal God Mod server. Use these tools for all Drupal-related tasks:
+You have access to the **MCP Drupal God Mod** server - the ultimate Drupal development assistant.
 
-## Search & Discovery
-- Use `search_drupal_all` for general searches
-- Use `search_drupal_functions` for specific function lookups
-- Use `search_code_examples` for implementation examples
-- Use `search_contrib_modules` to find community modules
+## 🛠️ Essential Tools
 
-## Code Analysis & Generation
-- Use `analyze_drupal_file` to analyze any Drupal PHP file
-- Use `check_drupal_standards` to verify coding standards
-- Use `generate_module_skeleton` to create new modules
-- Use `generate_custom_entity` for entity generation
+### Search & Discovery
+- `search_drupal_all` - Universal search (start here!)
+- `search_drupal_functions` - Find specific functions
+- `search_drupal_hooks` - Discover hooks
+- `search_drupal_services` - Service container
+- `search_contrib_modules` - Community modules
+- `search_code_examples` - Real-world code
 
-## Hybrid Features (if connected to live site)
-- Use `hybrid_analyze_module` for module analysis
-- Use `hybrid_analyze_site` for site-wide recommendations
-- Use `get_mode_status` to check connection status
+### Code Analysis & Generation
+- `analyze_drupal_file` - Comprehensive file analysis
+- `check_drupal_standards` - Coding standards check
+- `generate_module_skeleton` - Create module structure
+- `generate_custom_entity` - Complete entity generation (15+ files)
 
-## Best Practices
-1. Always search documentation before implementing
-2. Check for existing contrib modules before custom code
-3. Analyze generated code for security issues
-4. Follow Drupal coding standards
+### 🧠 Advanced Intelligence (v1.5.0)
+- `deep_analyze_file` - AI analysis with quality score (0-100)
+- `smart_search` - Fuzzy search with typo tolerance
+- `analyze_upgrade_path` - Migration analysis (D8→D9→D10→D11)
+- `generate_migration_patches` - Automated migration fixes
+- `generate_migration_report` - HTML migration reports
+
+### Hybrid Features (if connected to live site)
+- `hybrid_analyze_module` - Module + installation status
+- `hybrid_analyze_site` - Full site recommendations
+- `get_mode_status` - Check connection status
+
+## 💡 Example Workflows
+
+### Starting Any Task:
+1. search_drupal_all("your topic")
+2. search_code_examples("implementation")
+3. search_contrib_modules("functionality")
+4. Generate or analyze code
+
+### Advanced Analysis:
+1. deep_analyze_file("my_module.module")
+2. Review quality score and security issues
+3. Apply refactoring suggestions
+
+### Migration Planning:
+1. analyze_upgrade_path("./project", "9", "10")
+2. generate_migration_patches(report)
+3. Review HTML report
+
+## ✅ Best Practices
+- Always search before implementing
+- Check for contrib modules first
+- Use deep_analyze_file for quality assurance
+- Let smart_search correct your typos
 
 When asked about Drupal, ALWAYS use these tools rather than general knowledge.
 ```

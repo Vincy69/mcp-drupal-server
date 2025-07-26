@@ -71,7 +71,7 @@ When working on Drupal projects, **ALWAYS** use these MCP tools instead of relyi
 - `check_drupal_standards` - Coding standards check
 - `generate_module_skeleton` - Create module structure
 - `get_module_template_info` - Template options
-- `generate_custom_entity` - Entity generation (coming soon)
+- `generate_custom_entity` - Complete entity generation (15+ files)
 
 ### Hybrid Mode (if connected to live site)
 - `hybrid_analyze_module` - Module + installation status
