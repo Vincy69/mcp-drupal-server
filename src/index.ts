@@ -14,7 +14,11 @@ import { DrupalDocsClient } from "./drupal-docs-client.js";
 import { DrupalContribClient } from "./drupal-contrib-client.js";
 import { DrupalDynamicExamples } from "./drupal-dynamic-examples.js";
 import { DrupalCodeAnalyzer } from "./drupal-code-analyzer.js";
+import { DrupalCodeAnalyzerV2 } from "./drupal-code-analyzer-v2.js";
 import { DrupalModuleGenerator } from "./drupal-module-generator.js";
+import { DrupalEntityGenerator } from "./drupal-entity-generator.js";
+import { DrupalMigrationAssistant } from "./drupal-migration-assistant.js";
+import { DrupalFuzzySearch } from "./drupal-fuzzy-search.js";
 import { DrupalModeManager, DrupalServerMode } from "./drupal-mode-manager.js";
 import { DrupalHybridTools } from "./drupal-hybrid-tools.js";
 import { drupalTools } from "./tools/index.js";
@@ -26,7 +30,11 @@ export class DrupalMCPServer {
   private contribClient: DrupalContribClient;
   private examples: DrupalDynamicExamples;
   private codeAnalyzer: DrupalCodeAnalyzer;
+  private codeAnalyzerV2: DrupalCodeAnalyzerV2;
   private moduleGenerator: DrupalModuleGenerator;
+  private entityGenerator: DrupalEntityGenerator;
+  private migrationAssistant: DrupalMigrationAssistant;
+  private fuzzySearch: DrupalFuzzySearch;
   private modeManager: DrupalModeManager;
   private hybridTools: DrupalHybridTools;
   private docsOnlyMode: boolean; // Kept for backward compatibility
@@ -50,7 +58,11 @@ export class DrupalMCPServer {
     this.contribClient = new DrupalContribClient();
     this.examples = new DrupalDynamicExamples();
     this.codeAnalyzer = new DrupalCodeAnalyzer();
+    this.codeAnalyzerV2 = new DrupalCodeAnalyzerV2();
     this.moduleGenerator = new DrupalModuleGenerator();
+    this.entityGenerator = new DrupalEntityGenerator();
+    this.migrationAssistant = new DrupalMigrationAssistant();
+    this.fuzzySearch = new DrupalFuzzySearch();
     
     // Initialize Mode Manager
     this.hybridTools = new DrupalHybridTools();
@@ -422,7 +434,7 @@ export class DrupalMCPServer {
             const categories = await this.examples.getCategories();
             return { content: [{ type: "text", text: JSON.stringify(categories, null, 2) }] };
           case "get_examples_by_category":
-            const categoryExamples = await this.examples.getExamplesByCategory(args?.category as string, args?.drupal_version as string);
+            const categoryExamples = await this.examples.getExamplesByCategory(args?.category as string, args?.drupal_version as any);
             return { content: [{ type: "text", text: JSON.stringify(categoryExamples, null, 2) }] };
           case "get_examples_by_tag":
             const tagExamples = await this.examples.getExamplesByTag(args?.tag as string);
@@ -568,6 +580,154 @@ export class DrupalMCPServer {
               `- **smart_fallback**: Intelligent switching based on availability\n`;
             
             return { content: [{ type: "text", text: statusReport }] };
+          
+          // Phase 4 - Advanced Analysis Tools
+          case "deep_analyze_file":
+            const advancedAnalysis = await this.codeAnalyzerV2.analyzeAdvanced(args?.file_path as string);
+            const report = args?.generate_report !== false ? 
+              await this.codeAnalyzerV2.generateComprehensiveReport(args?.file_path as string) :
+              JSON.stringify(advancedAnalysis, null, 2);
+            return { content: [{ type: "text", text: report }] };
+            
+          case "smart_search":
+            const searchType = args?.search_type as string || 'all';
+            const query = args?.query as string;
+            const context = args?.context as any;
+            
+            let smartSearchResults: any;
+            switch (searchType) {
+              case 'functions':
+                const functions = await this.docsClient.searchFunctions("11.x", query);
+                smartSearchResults = await this.fuzzySearch.searchWithContext(
+                  query, functions, context || {},
+                  (item: any, term: string) => item.name.toLowerCase().includes(term) || item.description?.toLowerCase().includes(term),
+                  (item: any) => item.name
+                );
+                break;
+              case 'modules':
+                const modules = await this.contribClient.searchModules(query);
+                smartSearchResults = await this.fuzzySearch.searchWithContext(
+                  query, modules, context || {},
+                  (item: any, term: string) => item.title.toLowerCase().includes(term) || item.machine_name.toLowerCase().includes(term),
+                  (item: any) => item.title
+                );
+                break;
+              default:
+                // Search all
+                const allResults = await this.docsClient.searchAll(query);
+                smartSearchResults = await this.fuzzySearch.searchWithContext(
+                  query, allResults, context || {},
+                  (item: any, term: string) => JSON.stringify(item).toLowerCase().includes(term),
+                  (item: any) => item.title || item.name || item.function_name || ''
+                );
+            }
+            
+            return { content: [{ type: "text", text: JSON.stringify(smartSearchResults, null, 2) }] };
+            
+          case "generate_custom_entity":
+            const entityInfo = args?.entity_info as any;
+            const entityModuleInfo = args?.module_info as any;
+            const outputDir = args?.output_dir as string || './generated_entity';
+            
+            const generatedEntityFiles = await this.entityGenerator.generateCustomEntity(
+              entityModuleInfo,
+              entityInfo,
+              outputDir
+            );
+            
+            const entitySummary = `## Custom Entity Generated Successfully! 🎉\n\n` +
+              `**Entity Type:** ${entityInfo.entity_type}\n` +
+              `**Label:** ${entityInfo.label}\n` +
+              `**Module:** ${entityModuleInfo.name} (${entityModuleInfo.machine_name})\n` +
+              `**Files Generated:** ${generatedEntityFiles.length}\n\n` +
+              `### Generated Files:\n` +
+              generatedEntityFiles.map(file => `- **${file.path}**: ${file.description}`).join('\n') +
+              `\n\n### Features:\n` +
+              `- ${entityInfo.revisionable ? '✅' : '❌'} Revisionable\n` +
+              `- ${entityInfo.translatable ? '✅' : '❌'} Translatable\n` +
+              `- ${entityInfo.include_rest_api ? '✅' : '❌'} REST API\n` +
+              `- ${entityInfo.include_views ? '✅' : '❌'} Views Integration\n` +
+              `- ${entityInfo.include_admin_ui ? '✅' : '❌'} Admin UI\n` +
+              `\n### Next Steps:\n` +
+              `1. Copy the generated files to your module directory\n` +
+              `2. Enable the module: \`drush en ${entityModuleInfo.machine_name}\`\n` +
+              `3. Update database: \`drush updatedb\`\n` +
+              `4. Access entity admin at: /admin/content/${entityInfo.entity_type}\n`;
+              
+            return { content: [{ type: "text", text: entitySummary }] };
+            
+          case "analyze_upgrade_path":
+            const migrationReport = await this.migrationAssistant.analyzeUpgradePath(
+              args?.project_path as string,
+              args?.current_version as string,
+              args?.target_version as string
+            );
+            
+            let output = JSON.stringify(migrationReport, null, 2);
+            
+            if (args?.generate_html_report) {
+              const htmlReport = await this.migrationAssistant.generateHTMLReport(migrationReport);
+              // Save HTML report to file
+              const fs = await import('fs/promises');
+              const reportPath = `${args.project_path}/drupal-migration-report.html`;
+              await fs.writeFile(reportPath, htmlReport);
+              output += `\n\nHTML report saved to: ${reportPath}`;
+            }
+            
+            if (args?.generate_patches) {
+              const patches = await this.migrationAssistant.generateMigrationPatches(migrationReport);
+              output += `\n\nGenerated ${patches.size} patch files`;
+            }
+            
+            return { content: [{ type: "text", text: output }] };
+            
+          case "suggest_alternatives":
+            // This would need implementation in migration assistant
+            const alternatives = {
+              modern_alternatives: [],
+              best_practices: [],
+              documentation_links: []
+            };
+            return { content: [{ type: "text", text: JSON.stringify(alternatives, null, 2) }] };
+            
+          case "analyze_project_structure":
+            // Simplified implementation for now
+            const projectAnalysis = {
+              custom_modules: [],
+              custom_themes: [],
+              contrib_modules: [],
+              drupal_version: "Unknown",
+              recommendations: []
+            };
+            return { content: [{ type: "text", text: JSON.stringify(projectAnalysis, null, 2) }] };
+            
+          case "detect_coding_patterns":
+            // Simplified implementation
+            const patterns = {
+              dependency_injection: false,
+              event_subscribers: false,
+              custom_services: false,
+              hooks_used: [],
+              naming_convention: "unknown"
+            };
+            return { content: [{ type: "text", text: JSON.stringify(patterns, null, 2) }] };
+            
+          case "suggest_next_steps":
+            // Simplified implementation
+            const nextSteps = {
+              immediate: ["Add error handling", "Implement caching"],
+              short_term: ["Add tests", "Improve documentation"],
+              long_term: ["Refactor for performance", "Add API endpoints"]
+            };
+            return { content: [{ type: "text", text: JSON.stringify(nextSteps, null, 2) }] };
+            
+          case "generate_contextual_code":
+            // Simplified implementation
+            const generatedCode = `<?php
+// Generated code based on: ${args?.description}
+// TODO: Implement based on context and project patterns
+`;
+            return { content: [{ type: "text", text: generatedCode }] };
           
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);

@@ -24,7 +24,9 @@
     "release": "semantic-release",
     "prepare": "husky install",
     "test-connection": "node scripts/test-connection.js",
-    "configure-claude": "node scripts/configure-claude.js"
+    "configure-claude": "node scripts/configure-claude.js",
+    "install:wizard": "node scripts/install.js",
+    "postinstall": "npm run build"
   },
   "keywords": [
     "mcp",
@@ -41,7 +43,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.12",
+    "@jest/globals": "^30.0.5",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.0.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
@@ -54,6 +57,7 @@
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "semantic-release": "^23.0.2",
+    "ts-jest": "^29.4.0",
     "tsx": "^4.16.2",
     "typescript": "^5.5.4"
   }

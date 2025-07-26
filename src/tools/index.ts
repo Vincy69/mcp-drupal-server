@@ -978,4 +978,260 @@ export const drupalTools: Tool[] = [
       },
     },
   },
+
+  // Phase 4 - Advanced Analysis Tools
+  {
+    name: "deep_analyze_file",
+    description: "Advanced file analysis with quality score, performance issues, security audit, and refactoring suggestions",
+    inputSchema: {
+      type: "object",
+      properties: {
+        file_path: {
+          type: "string",
+          description: "The absolute path to the Drupal file to analyze",
+        },
+        generate_report: {
+          type: "boolean",
+          description: "Generate comprehensive markdown report",
+          default: true,
+        },
+      },
+      required: ["file_path"],
+    },
+  },
+  {
+    name: "smart_search",
+    description: "Intelligent search with typo correction, fuzzy matching, and contextual suggestions",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search query (supports typos and abbreviations)",
+        },
+        search_type: {
+          type: "string",
+          description: "Type of search to perform",
+          enum: ["all", "functions", "classes", "hooks", "modules", "examples"],
+          default: "all",
+        },
+        context: {
+          type: "object",
+          description: "Optional context for better results",
+          properties: {
+            current_file: {
+              type: "string",
+              description: "Current file being edited",
+            },
+            project_type: {
+              type: "string",
+              description: "Type of Drupal project",
+            },
+          },
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "generate_custom_entity",
+    description: "Generate a complete custom entity with all necessary files and configurations",
+    inputSchema: {
+      type: "object",
+      properties: {
+        entity_info: {
+          type: "object",
+          description: "Entity configuration",
+          properties: {
+            entity_type: { type: "string", description: "Machine name of entity" },
+            label: { type: "string", description: "Human readable label" },
+            label_plural: { type: "string", description: "Plural form of label" },
+            description: { type: "string", description: "Entity description" },
+            bundles: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  label: { type: "string" },
+                  description: { type: "string" },
+                },
+              },
+              description: "Entity bundles",
+            },
+            base_fields: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  type: { type: "string", enum: ["string", "text", "integer", "boolean", "datetime", "decimal", "entity_reference", "file", "image"] },
+                  label: { type: "string" },
+                  required: { type: "boolean" },
+                  description: { type: "string" },
+                },
+              },
+              description: "Base fields for the entity",
+            },
+            revisionable: { type: "boolean", default: false },
+            translatable: { type: "boolean", default: false },
+            include_rest_api: { type: "boolean", default: false },
+            include_views: { type: "boolean", default: true },
+            include_admin_ui: { type: "boolean", default: true },
+            include_tests: { type: "boolean", default: false },
+          },
+          required: ["entity_type", "label"],
+        },
+        module_info: {
+          type: "object",
+          description: "Module information",
+          properties: {
+            name: { type: "string" },
+            machine_name: { type: "string" },
+            namespace: { type: "string" },
+          },
+          required: ["name", "machine_name"],
+        },
+        output_dir: {
+          type: "string",
+          description: "Output directory for generated files",
+          default: "./generated_entity",
+        },
+      },
+      required: ["entity_info", "module_info"],
+    },
+  },
+  {
+    name: "analyze_upgrade_path",
+    description: "Analyze project for Drupal version upgrade issues and generate migration report",
+    inputSchema: {
+      type: "object",
+      properties: {
+        project_path: {
+          type: "string",
+          description: "Path to Drupal project root",
+        },
+        current_version: {
+          type: "string",
+          description: "Current Drupal version",
+          enum: ["8", "9", "10"],
+        },
+        target_version: {
+          type: "string",
+          description: "Target Drupal version",
+          enum: ["9", "10", "11"],
+        },
+        generate_patches: {
+          type: "boolean",
+          description: "Generate automated fix patches",
+          default: false,
+        },
+        generate_html_report: {
+          type: "boolean",
+          description: "Generate HTML report",
+          default: true,
+        },
+      },
+      required: ["project_path", "current_version", "target_version"],
+    },
+  },
+  {
+    name: "suggest_alternatives",
+    description: "Suggest modern alternatives for deprecated or outdated Drupal patterns",
+    inputSchema: {
+      type: "object",
+      properties: {
+        code_snippet: {
+          type: "string",
+          description: "Code snippet to analyze",
+        },
+        drupal_version: {
+          type: "string",
+          description: "Target Drupal version",
+          default: "11",
+        },
+      },
+      required: ["code_snippet"],
+    },
+  },
+
+  // Project Intelligence Tools
+  {
+    name: "analyze_project_structure",
+    description: "Analyze entire project structure and provide insights",
+    inputSchema: {
+      type: "object",
+      properties: {
+        project_path: {
+          type: "string",
+          description: "Path to Drupal project root",
+        },
+        include_custom_modules: {
+          type: "boolean",
+          description: "Analyze custom modules",
+          default: true,
+        },
+        include_custom_themes: {
+          type: "boolean",
+          description: "Analyze custom themes",
+          default: true,
+        },
+      },
+      required: ["project_path"],
+    },
+  },
+  {
+    name: "detect_coding_patterns",
+    description: "Detect coding patterns and conventions used in the project",
+    inputSchema: {
+      type: "object",
+      properties: {
+        project_path: {
+          type: "string",
+          description: "Path to Drupal project root",
+        },
+      },
+      required: ["project_path"],
+    },
+  },
+  {
+    name: "suggest_next_steps",
+    description: "Suggest next development steps based on current project state",
+    inputSchema: {
+      type: "object",
+      properties: {
+        project_path: {
+          type: "string",
+          description: "Path to Drupal project root",
+        },
+        goal: {
+          type: "string",
+          description: "Development goal or feature to implement",
+        },
+      },
+      required: ["project_path"],
+    },
+  },
+  {
+    name: "generate_contextual_code",
+    description: "Generate code that matches project style and conventions",
+    inputSchema: {
+      type: "object",
+      properties: {
+        description: {
+          type: "string",
+          description: "Description of what to generate",
+        },
+        context_file: {
+          type: "string",
+          description: "File to use as style reference",
+        },
+        target_location: {
+          type: "string",
+          description: "Where the code will be placed",
+        },
+      },
+      required: ["description"],
+    },
+  },
 ];

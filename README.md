@@ -1,6 +1,6 @@
 # 🚀 MCP Drupal God Mod
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/yourusername/mcp-drupal-god-mod)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/yourusername/mcp-drupal-god-mod)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
