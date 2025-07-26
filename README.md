@@ -110,7 +110,7 @@ Ajoutez le serveur à votre configuration MCP dans `~/.claude/mcp_settings.json`
 }
 ```
 
-## 🛠️ Outils disponibles (21 au total)
+## 🛠️ Outils disponibles (34+ au total)
 
 ### 📝 Gestion des contenus (Nodes)
 | Outil | Description | Paramètres |
@@ -151,6 +151,35 @@ Ajoutez le serveur à votre configuration MCP dans `~/.claude/mcp_settings.json`
 | `clear_cache` | Vider le cache | `type?` |
 | `get_site_info` | Informations du site | - |
 
+### 📚 Documentation Drupal officielle
+| Outil | Description | Paramètres |
+|-------|-------------|------------|
+| `search_drupal_functions` | Rechercher fonctions Drupal core | `query?`, `version?` |
+| `search_drupal_classes` | Rechercher classes Drupal core | `query?`, `version?` |
+| `search_drupal_hooks` | Rechercher hooks Drupal | `query?`, `version?` |
+| `search_drupal_topics` | Rechercher guides et topics | `query?`, `version?` |
+| `search_drupal_services` | Rechercher services Drupal | `query?`, `version?` |
+| `search_drupal_all` | Recherche globale documentation | `query`, `version?` |
+| `get_function_details` | Détails d'une fonction spécifique | `function_name`, `version?` |
+| `get_class_details` | Détails d'une classe spécifique | `class_name`, `version?` |
+
+### 🔌 Modules et thèmes contrib
+| Outil | Description | Paramètres |
+|-------|-------------|------------|
+| `search_contrib_modules` | Rechercher modules contrib | `query`, `core_compatibility?`, `category?`, `limit?` |
+| `search_contrib_themes` | Rechercher thèmes contrib | `query`, `core_compatibility?`, `limit?` |
+| `get_module_details` | Détails d'un module spécifique | `machine_name` |
+| `get_popular_modules` | Lister modules populaires | `limit?`, `category?` |
+
+### 💻 Exemples de code
+| Outil | Description | Paramètres |
+|-------|-------------|------------|
+| `search_code_examples` | Rechercher exemples de code | `query`, `category?`, `drupal_version?` |
+| `get_example_by_title` | Exemple par titre exact | `title` |
+| `list_example_categories` | Lister catégories d'exemples | - |
+| `get_examples_by_category` | Exemples par catégorie | `category`, `drupal_version?` |
+| `get_examples_by_tag` | Exemples par tag | `tag` |
+
 ## 💡 Exemples d'utilisation
 
 ### Avec Claude Code
@@ -169,6 +198,15 @@ claude: "Crée un nouveau tag 'Technology' dans la taxonomie"
 
 # Lister les modules installés
 claude: "Quels modules sont installés sur mon site Drupal ?"
+
+# Rechercher dans la documentation Drupal
+claude: "Comment utiliser la fonction node_load dans Drupal 11 ?"
+
+# Trouver des modules contrib
+claude: "Recherche-moi des modules pour le e-commerce compatible Drupal 10"
+
+# Obtenir des exemples de code
+claude: "Montre-moi un exemple de création de formulaire custom en Drupal"
 ```
 
 ### Appels directs d'outils
@@ -190,6 +228,25 @@ claude: "Quels modules sont installés sur mon site Drupal ?"
   "arguments": {
     "status": true,
     "limit": 10
+  }
+}
+
+// Rechercher une fonction Drupal
+{
+  "tool": "search_drupal_functions",
+  "arguments": {
+    "query": "node_load",
+    "version": "11.x"
+  }
+}
+
+// Trouver des modules e-commerce
+{
+  "tool": "search_contrib_modules",
+  "arguments": {
+    "query": "commerce",
+    "core_compatibility": ["10.x", "11.x"],
+    "limit": 5
   }
 }
 ```

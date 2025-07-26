@@ -10,11 +10,17 @@ import {
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { DrupalClient } from "./drupal-client.js";
+import { DrupalDocsClient } from "./drupal-docs-client.js";
+import { DrupalContribClient } from "./drupal-contrib-client.js";
+import { DrupalExamples } from "./drupal-examples.js";
 import { drupalTools } from "./tools/index.js";
 
-class DrupalMCPServer {
+export class DrupalMCPServer {
   private server: Server;
   private drupalClient: DrupalClient;
+  private docsClient: DrupalDocsClient;
+  private contribClient: DrupalContribClient;
+  private examples: DrupalExamples;
 
   constructor() {
     this.server = new Server(
@@ -31,6 +37,9 @@ class DrupalMCPServer {
     );
 
     this.drupalClient = new DrupalClient();
+    this.docsClient = new DrupalDocsClient();
+    this.contribClient = new DrupalContribClient();
+    this.examples = new DrupalExamples();
     this.setupHandlers();
   }
 
@@ -138,6 +147,78 @@ class DrupalMCPServer {
             return await this.drupalClient.clearCache(args?.type as string);
           case "get_site_info":
             return await this.drupalClient.getSiteInfo();
+          
+          // Drupal Documentation tools
+          case "search_drupal_functions":
+            const functions = await this.docsClient.searchFunctions(args?.version as any, args?.query as string);
+            return { content: [{ type: "text", text: JSON.stringify(functions, null, 2) }] };
+          case "search_drupal_classes":
+            const classes = await this.docsClient.searchClasses(args?.version as any, args?.query as string);
+            return { content: [{ type: "text", text: JSON.stringify(classes, null, 2) }] };
+          case "search_drupal_hooks":
+            const hooks = await this.docsClient.searchHooks(args?.version as any, args?.query as string);
+            return { content: [{ type: "text", text: JSON.stringify(hooks, null, 2) }] };
+          case "search_drupal_topics":
+            const topics = await this.docsClient.searchTopics(args?.version as any, args?.query as string);
+            return { content: [{ type: "text", text: JSON.stringify(topics, null, 2) }] };
+          case "search_drupal_services":
+            const services = await this.docsClient.searchServices(args?.version as any, args?.query as string);
+            return { content: [{ type: "text", text: JSON.stringify(services, null, 2) }] };
+          case "search_drupal_all":
+            const allResults = await this.docsClient.searchAll(args?.query as string, args?.version as any);
+            return { content: [{ type: "text", text: JSON.stringify(allResults, null, 2) }] };
+          case "get_function_details":
+            const functionDetails = await this.docsClient.getFunctionDetails(args?.function_name as string, args?.version as any);
+            return { content: [{ type: "text", text: JSON.stringify(functionDetails, null, 2) }] };
+          case "get_class_details":
+            const classDetails = await this.docsClient.getClassDetails(args?.class_name as string, args?.version as any);
+            return { content: [{ type: "text", text: JSON.stringify(classDetails, null, 2) }] };
+          
+          // Drupal Contrib tools
+          case "search_contrib_modules":
+            const modules = await this.contribClient.searchModules(args?.query as string, {
+              core_compatibility: (args?.core_compatibility as string[]) || undefined,
+              categories: args?.category ? [args.category as string] : undefined,
+              limit: args?.limit as number,
+            });
+            return { content: [{ type: "text", text: JSON.stringify(modules, null, 2) }] };
+          case "search_contrib_themes":
+            const themes = await this.contribClient.searchThemes(args?.query as string, {
+              core_compatibility: (args?.core_compatibility as string[]) || undefined,
+              limit: args?.limit as number,
+            });
+            return { content: [{ type: "text", text: JSON.stringify(themes, null, 2) }] };
+          case "get_module_details":
+            const moduleDetails = await this.contribClient.getModuleDetails(args?.machine_name as string);
+            return { content: [{ type: "text", text: JSON.stringify(moduleDetails, null, 2) }] };
+          case "get_popular_modules":
+            const popularModules = await this.contribClient.searchModules('', {
+              limit: args?.limit as number,
+              categories: args?.category ? [args.category as string] : undefined,
+            });
+            return { content: [{ type: "text", text: JSON.stringify(popularModules, null, 2) }] };
+          
+          // Drupal Code Examples tools
+          case "search_code_examples":
+            const searchResults = this.examples.searchExamples(args?.query as string);
+            const filteredResults = args?.category || args?.drupal_version ? 
+              this.examples.getExamples(args?.category as string, args?.drupal_version as string)
+                .filter(example => searchResults.some(result => result.title === example.title)) :
+              searchResults;
+            return { content: [{ type: "text", text: JSON.stringify(filteredResults, null, 2) }] };
+          case "get_example_by_title":
+            const example = this.examples.getExampleByTitle(args?.title as string);
+            return { content: [{ type: "text", text: JSON.stringify(example, null, 2) }] };
+          case "list_example_categories":
+            const categories = this.examples.getCategories();
+            return { content: [{ type: "text", text: JSON.stringify(categories, null, 2) }] };
+          case "get_examples_by_category":
+            const categoryExamples = this.examples.getExamples(args?.category as string, args?.drupal_version as string);
+            return { content: [{ type: "text", text: JSON.stringify(categoryExamples, null, 2) }] };
+          case "get_examples_by_tag":
+            const tagExamples = this.examples.getExamplesByTag(args?.tag as string);
+            return { content: [{ type: "text", text: JSON.stringify(tagExamples, null, 2) }] };
+          
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
         }

@@ -437,4 +437,333 @@ export const drupalTools: Tool[] = [
       properties: {},
     },
   },
+
+  // Drupal Documentation Tools
+  {
+    name: "search_drupal_functions",
+    description: "Search Drupal core functions in official API documentation",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for function names or descriptions",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+    },
+  },
+  {
+    name: "search_drupal_classes",
+    description: "Search Drupal core classes in official API documentation",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for class names or descriptions",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+    },
+  },
+  {
+    name: "search_drupal_hooks",
+    description: "Search Drupal hooks in official API documentation",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for hook names or descriptions",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+    },
+  },
+  {
+    name: "search_drupal_topics",
+    description: "Search Drupal topics and guides in official API documentation",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for topics or guide names",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+    },
+  },
+  {
+    name: "search_drupal_services",
+    description: "Search Drupal services in official API documentation",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for service names or descriptions",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+    },
+  },
+  {
+    name: "search_drupal_all",
+    description: "Search across all Drupal documentation types (functions, classes, hooks, topics, services)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term to find across all documentation types",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "get_function_details",
+    description: "Get detailed information about a specific Drupal function",
+    inputSchema: {
+      type: "object",
+      properties: {
+        function_name: {
+          type: "string",
+          description: "The exact name of the Drupal function",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+      required: ["function_name"],
+    },
+  },
+  {
+    name: "get_class_details",
+    description: "Get detailed information about a specific Drupal class",
+    inputSchema: {
+      type: "object",
+      properties: {
+        class_name: {
+          type: "string",
+          description: "The exact name of the Drupal class",
+        },
+        version: {
+          type: "string",
+          description: "Drupal version (7.x, 8.x, 9.x, 10.x, 11.x)",
+          default: "11.x",
+          enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+        },
+      },
+      required: ["class_name"],
+    },
+  },
+
+  // Drupal Contrib Module Tools
+  {
+    name: "search_contrib_modules",
+    description: "Search Drupal contributed modules on Drupal.org",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for module names or descriptions",
+        },
+        core_compatibility: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+          },
+          description: "Filter by Drupal core compatibility",
+        },
+        category: {
+          type: "string",
+          description: "Filter by module category",
+        },
+        limit: {
+          type: "number",
+          description: "Limit the number of results",
+          default: 20,
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "search_contrib_themes",
+    description: "Search Drupal contributed themes on Drupal.org",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for theme names or descriptions",
+        },
+        core_compatibility: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["7.x", "8.x", "9.x", "10.x", "11.x"],
+          },
+          description: "Filter by Drupal core compatibility",
+        },
+        limit: {
+          type: "number",
+          description: "Limit the number of results",
+          default: 20,
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "get_module_details",
+    description: "Get detailed information about a specific Drupal contributed module",
+    inputSchema: {
+      type: "object",
+      properties: {
+        machine_name: {
+          type: "string",
+          description: "The machine name of the module (e.g., 'views', 'devel')",
+        },
+      },
+      required: ["machine_name"],
+    },
+  },
+  {
+    name: "get_popular_modules",
+    description: "Get a list of popular Drupal contributed modules",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: {
+          type: "number",
+          description: "Limit the number of results",
+          default: 50,
+        },
+        category: {
+          type: "string",
+          description: "Filter by module category",
+        },
+      },
+    },
+  },
+
+  // Drupal Code Examples Tools
+  {
+    name: "search_code_examples",
+    description: "Search Drupal code examples and snippets",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term for code examples",
+        },
+        category: {
+          type: "string",
+          description: "Filter by category (nodes, users, hooks, forms, database, services, etc.)",
+        },
+        drupal_version: {
+          type: "string",
+          description: "Filter by Drupal version",
+          enum: ["9.x", "10.x", "11.x"],
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "get_example_by_title",
+    description: "Get a specific code example by its title",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description: "The exact title of the code example",
+        },
+      },
+      required: ["title"],
+    },
+  },
+  {
+    name: "list_example_categories",
+    description: "Get all available code example categories",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  },
+  {
+    name: "get_examples_by_category",
+    description: "Get all code examples in a specific category",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "The category name (nodes, users, hooks, forms, etc.)",
+        },
+        drupal_version: {
+          type: "string",
+          description: "Filter by Drupal version",
+          enum: ["9.x", "10.x", "11.x"],
+        },
+      },
+      required: ["category"],
+    },
+  },
+  {
+    name: "get_examples_by_tag",
+    description: "Get code examples by tag",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tag: {
+          type: "string",
+          description: "The tag to search for (node, user, api, hook, etc.)",
+        },
+      },
+      required: ["tag"],
+    },
+  },
 ];
