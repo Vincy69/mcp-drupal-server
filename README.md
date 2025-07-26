@@ -273,8 +273,10 @@ MAX_RETRIES=3               # Maximum retry attempts
 
 ## 📚 Documentation
 
+- **[ECOSYSTEM_SETUP.md](ECOSYSTEM_SETUP.md)** - 🚀 Quick 5-minute setup guide
+- **[MCP_ECOSYSTEM.md](MCP_ECOSYSTEM.md)** - Complete MCP ecosystem guide for Drupal development
+- **[CLAUDE.md](CLAUDE.md)** - Usage guide for Claude Code
 - **[API.md](API.md)** - Complete API reference with examples
-- **[CLAUDE.md](CLAUDE.md)** - Usage guide for Claude
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 
 ## 🏗️ Architecture
@@ -319,9 +321,15 @@ npm run lint
 # Type check
 npm run type-check
 
+# Test MCP ecosystem compatibility
+./test_mcp_ecosystem.js
+
+# Install additional MCP servers
+./install_mcp_ecosystem.sh
+
 # Run with Docker
-docker build -t mcp-drupal-god-mod .
-docker run -it mcp-drupal-god-mod
+docker build -t mcp-drupal-server .
+docker run -it mcp-drupal-server
 ```
 
 ### CI/CD

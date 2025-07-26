@@ -4,6 +4,8 @@ You have access to the **MCP Drupal Server** - the ultimate Drupal development a
 
 **🔥 Claude Code Integration**: This MCP server is auto-detected when working in Drupal projects, giving you instant access to comprehensive Drupal development tools.
 
+**🌐 Complete Ecosystem**: For full development workflow, this server works best with additional MCP servers for database, filesystem, Git, and more. See **[MCP_ECOSYSTEM.md](MCP_ECOSYSTEM.md)** for the complete setup guide.
+
 ## 🎯 Core Principles
 
 When working on Drupal projects, **ALWAYS** use these MCP tools instead of relying on general knowledge. The server provides:
@@ -179,6 +181,30 @@ get_examples_by_category("database")
 2. Use specific tools rather than general search when possible
 3. Cache results locally when doing repeated operations
 4. Use `get_mode_status()` before hybrid operations
+
+## 🌐 Complete Development Environment
+
+### Quick Setup with Ecosystem
+```bash
+# Install complete MCP ecosystem for Drupal development
+./install_mcp_ecosystem.sh
+
+# Test all MCP servers compatibility
+./test_mcp_ecosystem.js
+
+# Use example configuration
+cp claude_mcp_config.json ~/.config/claude-code/mcp_config.json
+```
+
+### Recommended MCP Servers for Drupal
+- **Database** - PostgreSQL/MySQL access and analysis
+- **Filesystem** - File management and exploration
+- **Git** - Version control integration
+- **GitHub** - Repository and collaboration tools
+- **Composer** - PHP dependency management
+- **Docker** - Container environment control
+
+See **[MCP_ECOSYSTEM.md](MCP_ECOSYSTEM.md)** for complete setup and usage instructions.
 
 ---
 

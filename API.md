@@ -1,6 +1,6 @@
-# 📚 MCP Drupal God Mod - API Documentation
+# 📚 MCP Drupal Server - API Documentation
 
-This document provides comprehensive API documentation for all available tools and methods in the MCP Drupal God Mod server.
+This document provides comprehensive API documentation for all available tools and methods in the MCP Drupal Server.
 
 ## Table of Contents
 
@@ -11,6 +11,7 @@ This document provides comprehensive API documentation for all available tools a
 - [Hybrid Mode](#hybrid-mode)
 - [Advanced Intelligence](#advanced-intelligence)
 - [System Management](#system-management)
+- [MCP Ecosystem Integration](#mcp-ecosystem-integration)
 
 ---
 
@@ -627,3 +628,107 @@ const html = await generate_migration_report({
   report: report
 });
 ```
+
+---
+
+## MCP Ecosystem Integration
+
+The MCP Drupal Server is designed to work seamlessly with other MCP servers for a complete development environment.
+
+### Recommended Server Combination
+
+For optimal Drupal development, combine this server with:
+
+```json
+{
+  "mcpServers": {
+    "drupal": {
+      "command": "node",
+      "args": ["/path/to/mcp-drupal-server/dist/index.js"]
+    },
+    "database": {
+      "command": "mcp-alchemy",
+      "args": ["--database-url", "postgresql://user:pass@localhost/drupal"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "/path/to/drupal"]
+    },
+    "git": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-git", "--repository", "/path/to/drupal"]
+    }
+  }
+}
+```
+
+### Cross-Server Workflows
+
+#### Database + Drupal Analysis
+```javascript
+// Use database server to analyze schema
+const tables = await database.query("SHOW TABLES LIKE 'node%'");
+
+// Use Drupal server to understand structure
+const nodeHooks = await search_drupal_hooks({
+  query: "node",
+  version: "11.x"
+});
+```
+
+#### Filesystem + Code Generation
+```javascript
+// Generate module with Drupal server
+const files = await generate_module_skeleton({
+  name: "Custom Module",
+  machine_name: "custom_module"
+});
+
+// Use filesystem server to write files
+for (const file of files) {
+  await filesystem.writeFile(file.path, file.content);
+}
+```
+
+#### Git + Development Workflow
+```javascript
+// Generate code
+const module = await generate_custom_entity({...});
+
+// Use filesystem to write
+await filesystem.writeFiles(module.files);
+
+// Use git to commit
+await git.add(".");
+await git.commit("feat: add custom entity module");
+```
+
+### Setup and Testing
+
+Use the provided ecosystem tools:
+
+```bash
+# Install complete ecosystem
+./install_mcp_ecosystem.sh
+
+# Test compatibility
+./test_mcp_ecosystem.js
+
+# Use example configuration
+cp claude_mcp_config.json ~/.config/claude-code/mcp_config.json
+```
+
+For complete setup instructions, see **[MCP_ECOSYSTEM.md](MCP_ECOSYSTEM.md)**.
+
+---
+
+## Support and Resources
+
+- **Repository**: [https://github.com/Vincy69/mcp-drupal-server](https://github.com/Vincy69/mcp-drupal-server)
+- **Issues**: [Report bugs and feature requests](https://github.com/Vincy69/mcp-drupal-server/issues)
+- **Ecosystem Guide**: [MCP_ECOSYSTEM.md](MCP_ECOSYSTEM.md)
+- **Usage Guide**: [CLAUDE.md](CLAUDE.md)
+
+---
+
+*This server is optimized for **Claude Code** and provides the most comprehensive Drupal development experience when combined with the recommended MCP ecosystem.*
