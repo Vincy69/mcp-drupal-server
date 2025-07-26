@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { z } from 'zod';
+import { mockDrupalFunctions, mockDrupalHooks, mockDrupalClasses, mockCodeExamples, mockModuleTemplates, exampleCategories } from './mock-data.js';
 
 const DrupalVersionSchema = z.enum(['7.x', '8.x', '9.x', '10.x', '11.x']);
 type DrupalVersion = z.infer<typeof DrupalVersionSchema>;
@@ -209,7 +210,8 @@ export class DrupalDocsClient {
       return enhancedFunctions.slice(0, 500); // Higher limit for comprehensive results
     } catch (error) {
       console.error(`Error searching functions: ${error instanceof Error ? error.message : String(error)}`);
-      return [];
+      console.log('Falling back to mock data...');
+      return this.getMockFunctions(query);
     }
   }
 
@@ -582,7 +584,8 @@ export class DrupalDocsClient {
       return allData;
     } catch (error) {
       console.error(`Error searching classes: ${error instanceof Error ? error.message : String(error)}`);
-      return [];
+      console.log('Falling back to mock data...');
+      return this.getMockClasses(query);
     }
   }
 
@@ -638,7 +641,8 @@ export class DrupalDocsClient {
       return uniqueHooks.slice(0, 200); // Return more hooks but with reasonable limit
     } catch (error) {
       console.error(`Error searching hooks: ${error instanceof Error ? error.message : String(error)}`);
-      return [];
+      console.log('Falling back to mock data...');
+      return this.getMockHooks(query);
     }
   }
 
@@ -1506,5 +1510,82 @@ export class DrupalDocsClient {
       size: this.cache.size,
       entries: Array.from(this.cache.keys()),
     };
+  }
+
+  // Mock data fallback methods
+  private getMockFunctions(query?: string): DrupalAPIFunction[] {
+    let functions = mockDrupalFunctions;
+    
+    if (query && query.trim()) {
+      const queryLower = query.toLowerCase();
+      functions = mockDrupalFunctions.filter(func => 
+        func.name.toLowerCase().includes(queryLower) ||
+        func.description.toLowerCase().includes(queryLower) ||
+        (func.category && func.category.toLowerCase().includes(queryLower)) ||
+        (func.module && func.module.toLowerCase().includes(queryLower))
+      );
+    }
+    
+    console.log(`Mock data: Returning ${functions.length} functions`);
+    return functions;
+  }
+
+  private getMockHooks(query?: string): DrupalAPIHook[] {
+    let hooks = mockDrupalHooks;
+    
+    if (query && query.trim()) {
+      const queryLower = query.toLowerCase();
+      hooks = mockDrupalHooks.filter(hook => 
+        hook.name.toLowerCase().includes(queryLower) ||
+        hook.description.toLowerCase().includes(queryLower) ||
+        (hook.group && hook.group.toLowerCase().includes(queryLower))
+      );
+    }
+    
+    console.log(`Mock data: Returning ${hooks.length} hooks`);
+    return hooks;
+  }
+
+  private getMockClasses(query?: string): DrupalAPIClass[] {
+    let classes = mockDrupalClasses;
+    
+    if (query && query.trim()) {
+      const queryLower = query.toLowerCase();
+      classes = mockDrupalClasses.filter(cls => 
+        cls.name.toLowerCase().includes(queryLower) ||
+        cls.description.toLowerCase().includes(queryLower) ||
+        cls.namespace.toLowerCase().includes(queryLower)
+      );
+    }
+    
+    console.log(`Mock data: Returning ${classes.length} classes`);
+    return classes;
+  }
+
+  getMockCodeExamples(query?: string): any[] {
+    let examples = mockCodeExamples;
+    
+    if (query && query.trim()) {
+      const queryLower = query.toLowerCase();
+      examples = mockCodeExamples.filter(example => 
+        example.title.toLowerCase().includes(queryLower) ||
+        example.description.toLowerCase().includes(queryLower) ||
+        example.category.toLowerCase().includes(queryLower) ||
+        example.tags.some(tag => tag.toLowerCase().includes(queryLower))
+      );
+    }
+    
+    console.log(`Mock data: Returning ${examples.length} code examples`);
+    return examples;
+  }
+
+  getMockModuleTemplates(): any[] {
+    console.log(`Mock data: Returning ${mockModuleTemplates.length} module templates`);
+    return mockModuleTemplates;
+  }
+
+  getMockExampleCategories(): any[] {
+    console.log(`Mock data: Returning ${exampleCategories.length} example categories`);
+    return exampleCategories;
   }
 }

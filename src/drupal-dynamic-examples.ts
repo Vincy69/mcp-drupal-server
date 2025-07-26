@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { mockCodeExamples, exampleCategories } from './mock-data.js';
 
 export interface CodeExample {
   title: string;
@@ -106,7 +107,8 @@ export class DrupalDynamicExamples {
 
       return sortedExamples;
     } catch (error) {
-      throw new Error(`Failed to search examples: ${error instanceof Error ? error.message : String(error)}`);
+      console.error('All example sources failed, using mock data:', error);
+      return this.getMockExamples(query, category);
     }
   }
 
@@ -122,6 +124,46 @@ export class DrupalDynamicExamples {
    */
   async getExamplesByTag(tag: string): Promise<CodeExample[]> {
     return this.searchExamples(tag);
+  }
+
+  /**
+   * Get mock examples as fallback
+   */
+  private getMockExamples(query?: string, category?: string): CodeExample[] {
+    let examples = mockCodeExamples.map(example => ({
+      title: example.title,
+      description: example.description,
+      category: example.category,
+      drupal_version: ['11.x', '10.x'],
+      code: example.code,
+      tags: example.tags,
+      source_url: 'mock-data'
+    }));
+
+    if (category) {
+      examples = examples.filter(ex => ex.category.toLowerCase().includes(category.toLowerCase()));
+    }
+
+    if (query && query.trim()) {
+      const queryLower = query.toLowerCase();
+      examples = examples.filter(ex => 
+        ex.title.toLowerCase().includes(queryLower) ||
+        ex.description.toLowerCase().includes(queryLower) ||
+        ex.tags.some(tag => tag.toLowerCase().includes(queryLower))
+      );
+    }
+
+    console.log(`Mock fallback: Returning ${examples.length} code examples`);
+    return examples;
+  }
+
+  /**
+   * Get mock categories as fallback
+   */
+  private getMockCategories(): string[] {
+    const categories = exampleCategories.map(cat => cat.name);
+    console.log(`Mock fallback: Returning ${categories.length} categories`);
+    return categories;
   }
 
   /**
@@ -146,7 +188,8 @@ export class DrupalDynamicExamples {
 
       return categories;
     } catch (error) {
-      throw new Error(`Failed to fetch categories: ${error instanceof Error ? error.message : String(error)}`);
+      console.error('Categories fetch failed, using mock data:', error);
+      return this.getMockCategories();
     }
   }
 

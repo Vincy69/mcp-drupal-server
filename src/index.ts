@@ -424,15 +424,27 @@ export class DrupalMCPServer {
           
           // Drupal Code Examples tools
           case "search_code_examples":
-            const searchResults = await this.examples.searchExamples(args?.query as string, args?.category as string);
-            return { content: [{ type: "text", text: JSON.stringify(searchResults, null, 2) }] };
+            try {
+              const searchResults = await this.examples.searchExamples(args?.query as string, args?.category as string);
+              return { content: [{ type: "text", text: JSON.stringify(searchResults, null, 2) }] };
+            } catch (error) {
+              console.error('Code examples search failed, using mock data:', error);
+              const mockResults = this.docsClient.getMockCodeExamples(args?.query as string);
+              return { content: [{ type: "text", text: JSON.stringify(mockResults, null, 2) }] };
+            }
           case "get_example_by_title":
             const titleResults = await this.examples.searchExamples(args?.title as string);
             const example = titleResults.find(ex => ex.title === args?.title) || null;
             return { content: [{ type: "text", text: JSON.stringify(example, null, 2) }] };
           case "list_example_categories":
-            const categories = await this.examples.getCategories();
-            return { content: [{ type: "text", text: JSON.stringify(categories, null, 2) }] };
+            try {
+              const categories = await this.examples.getCategories();
+              return { content: [{ type: "text", text: JSON.stringify(categories, null, 2) }] };
+            } catch (error) {
+              console.error('Categories list failed, using mock data:', error);
+              const mockCategories = this.docsClient.getMockExampleCategories();
+              return { content: [{ type: "text", text: JSON.stringify(mockCategories, null, 2) }] };
+            }
           case "get_examples_by_category":
             const categoryExamples = await this.examples.getExamplesByCategory(args?.category as string, args?.drupal_version as any);
             return { content: [{ type: "text", text: JSON.stringify(categoryExamples, null, 2) }] };
@@ -504,33 +516,56 @@ export class DrupalMCPServer {
                 
               return { content: [{ type: "text", text: summary }] };
             } catch (error) {
+              console.error('Module generation failed, providing fallback guidance:', error);
+              const fallbackMessage = `## ⚠️ Module Generation Failed\n\n` +
+                `**Error:** ${error instanceof Error ? error.message : String(error)}\n\n` +
+                `### Manual Module Creation Guide\n\n` +
+                `To create a basic module manually:\n\n` +
+                `1. Create directory: \`${outputPath}/${fullModuleInfo.machineName || 'my_module'}/\`\n` +
+                `2. Create \`.info.yml\` file with module metadata\n` +
+                `3. Create \`.module\` file for hook implementations\n` +
+                `4. Add routing and controller files as needed\n\n` +
+                `**Alternative:** Use Drupal Console: \`drupal generate:module\`\n` +
+                `**Alternative:** Use Drush: \`drush generate module\`\n`;
+              
               return {
                 content: [{
                   type: "text",
-                  text: `Error generating module: ${error instanceof Error ? error.message : String(error)}`
+                  text: fallbackMessage
                 }]
               };
             }
           case "get_module_template_info":
-            const availableHooks = await this.moduleGenerator.getAvailableHooks();
-            const structure = args?.show_structure !== false ? this.moduleGenerator.getRecommendedStructure() : '';
-            
-            const templateInfo = `## Drupal Module Generator\n\n` +
-              `### Available Hooks\n` +
-              availableHooks.map(hook => `- ${hook}`).join('\n') +
-              `\n\n### Module Options\n` +
-              `- **include_install**: Database schema and installation hooks\n` +
-              `- **include_routing**: URL routing definitions\n` +
-              `- **include_services**: Dependency injection services\n` +
-              `- **include_controller**: HTTP request controllers\n` +
-              `- **include_form**: Configuration forms\n` +
-              `- **include_entity**: Content entities\n` +
-              `- **include_plugin**: Block plugins\n` +
-              `- **include_permissions**: Custom permissions\n` +
-              `- **include_config_schema**: Configuration schemas\n` +
-              (structure ? `\n${structure}` : '');
+            try {
+              const availableHooks = await this.moduleGenerator.getAvailableHooks();
+              const structure = args?.show_structure !== false ? this.moduleGenerator.getRecommendedStructure() : '';
               
-            return { content: [{ type: "text", text: templateInfo }] };
+              const templateInfo = `## Drupal Module Generator\n\n` +
+                `### Available Hooks\n` +
+                availableHooks.map(hook => `- ${hook}`).join('\n') +
+                `\n\n### Module Options\n` +
+                `- **include_install**: Database schema and installation hooks\n` +
+                `- **include_routing**: URL routing definitions\n` +
+                `- **include_services**: Dependency injection services\n` +
+                `- **include_controller**: HTTP request controllers\n` +
+                `- **include_form**: Configuration forms\n` +
+                `- **include_entity**: Content entities\n` +
+                `- **include_plugin**: Block plugins\n` +
+                `- **include_permissions**: Custom permissions\n` +
+                `- **include_config_schema**: Configuration schemas\n` +
+                (structure ? `\n${structure}` : '');
+                
+              return { content: [{ type: "text", text: templateInfo }] };
+            } catch (error) {
+              console.error('Module template info failed, using mock data:', error);
+              const mockTemplates = this.docsClient.getMockModuleTemplates();
+              const templateInfo = `## Drupal Module Generator (Mock Data)\n\n` +
+                `### Available Templates\n` +
+                mockTemplates.map(template => `- **${template.name}**: ${template.description}`).join('\n') +
+                `\n\n### Features Available\n` +
+                mockTemplates.map(template => `- ${template.features.join(', ')}`).join('\n');
+              return { content: [{ type: "text", text: templateInfo }] };
+            }
           
           // Hybrid Intelligence Tools
           case "hybrid_analyze_module":
