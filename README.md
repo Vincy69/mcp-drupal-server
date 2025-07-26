@@ -4,10 +4,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
-The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data aggregation, hybrid architecture, and intelligent analysis tools. This isn't just another MCP server; it's the professional solution for Drupal development.
+The **Ultimate MCP Server for Drupal CMS** - Designed specifically for **Claude Code**, combining dynamic data aggregation, hybrid architecture, and intelligent analysis tools. This isn't just another MCP server; it's the professional solution for Drupal development with seamless Claude Code integration.
 
 ## 🎯 Why MCP Drupal Server?
 
+- **🔥 Optimized for Claude Code** - Auto-detected, seamless integration in Drupal projects
 - **100% Dynamic Architecture** - No hardcoded data, everything from live APIs
 - **Hybrid Intelligence** - Seamlessly combines documentation with live Drupal instances
 - **Multi-Source Aggregation** - GitHub, Drupal.org, API docs, and your Drupal site
@@ -64,7 +65,7 @@ The wizard will:
 - ✅ Check prerequisites (Node.js 18+, npm 8+)
 - ✅ Configure environment variables
 - ✅ Install dependencies and build
-- ✅ Set up Claude Desktop integration automatically
+- ✅ Set up Claude Code integration automatically
 - ✅ Create startup scripts
 
 #### Option 2: Manual Installation
@@ -87,9 +88,24 @@ npm run build
 npm start
 ```
 
-### Claude Desktop Configuration
+### Claude Code Configuration
 
-Add to your Claude Desktop configuration file:
+**Primary Usage**: This MCP server is optimized for **Claude Code** - Anthropic's official CLI tool.
+
+#### Option 1: Auto-detected (Recommended)
+If you're using Claude Code in a Drupal project directory, the MCP server will be auto-detected and available immediately.
+
+#### Option 2: Manual Configuration
+Add to your Claude Code MCP configuration:
+
+```bash
+# Install and run in your Drupal project
+npm install -g mcp-drupal-server
+mcp-drupal-server
+```
+
+#### Claude Desktop (Alternative)
+For Claude Desktop users, add to configuration file:
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -97,24 +113,27 @@ Add to your Claude Desktop configuration file:
 ```json
 {
   "mcpServers": {
-    "drupal-server": {
+    "drupal": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-drupal-server/dist/index.js"],
-      "env": {
-        "DRUPAL_BASE_URL": "https://your-site.com",
-        "DRUPAL_USERNAME": "admin",
-        "DRUPAL_PASSWORD": "your-password"
-      }
+      "args": ["/path/to/mcp-drupal-server/dist/index.js"]
     }
   }
 }
 ```
 
-## 📖 Usage with Claude
+## 📖 Usage with Claude Code
 
-### Basic Usage
+### Getting Started
 
-Create a `CLAUDE.md` file in your Drupal project root:
+**Claude Code** automatically detects this MCP server in Drupal projects. Simply:
+
+1. Navigate to your Drupal project directory
+2. Run `claude` command
+3. Start asking Drupal questions!
+
+### Pro Tip: CLAUDE.md Integration
+
+For enhanced experience, create a `CLAUDE.md` file in your Drupal project root:
 
 ```markdown
 # 🚀 Drupal Development with MCP Drupal Server
@@ -173,17 +192,20 @@ You have access to the **MCP Drupal Server** - the ultimate Drupal development a
 - Use deep_analyze_file for quality assurance
 - Let smart_search correct your typos
 
-When asked about Drupal, ALWAYS use these tools rather than general knowledge.
+**Claude Code Integration**: When working on Drupal projects, Claude Code automatically uses these tools rather than general knowledge, providing you with real-time, accurate Drupal development assistance.
 ```
 
-### Example Prompts
+### Example Claude Code Conversations
 
-```
-"Find all hooks related to user authentication"
-"Generate a custom module for managing events"
-"Analyze my custom module for security issues"
-"What contrib modules can help with SEO?"
-"Show me examples of creating custom entities"
+```bash
+# In your Drupal project directory with Claude Code:
+$ claude "Find all hooks related to user authentication"
+$ claude "Generate a custom module for managing events" 
+$ claude "Analyze my custom module for security issues"
+$ claude "What contrib modules can help with SEO?"
+$ claude "Show me examples of creating custom entities"
+
+# Claude Code automatically uses MCP Drupal Server for accurate responses!
 ```
 
 ## 🔧 Configuration
