@@ -1,6 +1,6 @@
 # 🚀 MCP Drupal God Mod
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/yourusername/mcp-drupal-god-mod)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/Vincy69/mcp-drupal-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
@@ -12,7 +12,8 @@ The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data
 - **Hybrid Intelligence** - Seamlessly combines documentation with live Drupal instances
 - **Multi-Source Aggregation** - GitHub, Drupal.org, API docs, and your Drupal site
 - **Smart Fallback System** - Never fails, gracefully degrades when sources are unavailable
-- **Advanced Analysis Tools** - Code analyzer, module generator, standards checker
+- **Advanced Analysis Tools** - AI-powered code analyzer v2, module generator, standards checker
+- **AI Intelligence** - Fuzzy search with typo tolerance, migration assistant, quality scoring
 - **Blazing Fast Cache** - Intelligent caching with automatic invalidation
 
 ## ✨ Features
@@ -24,10 +25,17 @@ The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data
 - **Hook Documentation** - Complete hook reference with usage examples
 
 ### 🛠️ Development Tools
-- **Code Analyzer** - Analyze Drupal files for structure, security issues, and standards
+- **Code Analyzer v2** - AI-powered analysis with quality scoring (0-100), security audit, and refactoring suggestions
 - **Module Generator** - Generate complete module skeletons with 15+ file types
 - **Standards Checker** - Ensure your code follows Drupal coding standards
-- **Custom Entity Generator** - Create custom entities with all necessary files
+- **Custom Entity Generator** - Create custom entities with all necessary files (15+ files per entity)
+- **Migration Assistant** - Analyze and automate Drupal version upgrades (8→9→10→11)
+
+### 🧠 Advanced Intelligence Features (v1.5.0)
+- **Deep Code Analysis** - Quality scoring, performance detection, security audit, refactoring suggestions
+- **Smart Fuzzy Search** - Typo tolerance, abbreviation expansion, synonym matching, "Did you mean..." suggestions
+- **Migration Intelligence** - Automated upgrade path analysis, patch generation, effort estimation
+- **Entity Generation** - Complete custom entity with forms, storage, REST API, Views integration
 
 ### 🎭 Hybrid Mode Features
 - **4 Operational Modes**:
@@ -42,14 +50,36 @@ The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data
 
 ### Installation
 
+#### Option 1: Interactive Installation Wizard (Recommended)
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mcp-drupal-god-mod.git
-cd mcp-drupal-god-mod
+git clone https://github.com/Vincy69/mcp-drupal-server.git
+cd mcp-drupal-server
+
+# Run the installation wizard
+npm run install:wizard
+```
+
+The wizard will:
+- ✅ Check prerequisites (Node.js 18+, npm 8+)
+- ✅ Configure environment variables
+- ✅ Install dependencies and build
+- ✅ Set up Claude Desktop integration automatically
+- ✅ Create startup scripts
+
+#### Option 2: Manual Installation
+```bash
+# Clone the repository
+git clone https://github.com/Vincy69/mcp-drupal-server.git
+cd mcp-drupal-server
 
 # Install dependencies
 npm install
 
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your Drupal connection details
 # Build the project
 npm run build
 
@@ -170,7 +200,16 @@ MAX_RETRIES=3               # Maximum retry attempts
 | `analyze_drupal_file` | Analyze PHP file structure | Local |
 | `check_drupal_standards` | Check coding standards | Local |
 | `generate_module_skeleton` | Create module structure | Local |
-| `generate_custom_entity` | Generate entity classes | Local |
+| `generate_custom_entity` | Generate complete custom entities | Local |
+
+### Advanced Intelligence Tools (v1.5.0)
+| Tool | Description | Mode |
+|------|-------------|------|
+| `deep_analyze_file` | Advanced code analysis with quality scoring | Local |
+| `smart_search` | Fuzzy search with typo tolerance | Local |
+| `analyze_upgrade_path` | Drupal version migration analysis | Local |
+| `generate_migration_patches` | Generate automated migration patches | Local |
+| `generate_migration_report` | Create HTML migration reports | Local |
 
 ### Hybrid Tools
 | Tool | Description | Mode |
@@ -180,6 +219,12 @@ MAX_RETRIES=3               # Maximum retry attempts
 | `hybrid_analyze_site` | Full site analysis | Hybrid |
 | `hybrid_analyze_content_type` | Content type analysis | Hybrid |
 | `get_mode_status` | Check server mode status | System |
+
+## 📚 Documentation
+
+- **[API.md](API.md)** - Complete API reference with examples
+- **[CLAUDE.md](CLAUDE.md)** - Usage guide for Claude
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 
 ## 🏗️ Architecture
 
@@ -222,7 +267,21 @@ npm run lint
 
 # Type check
 npm run type-check
+
+# Run with Docker
+docker build -t mcp-drupal-god-mod .
+docker run -it mcp-drupal-god-mod
 ```
+
+### CI/CD
+
+The project includes GitHub Actions workflows for:
+- ✅ Automated testing (Node.js 18, 20)
+- ✅ Security scanning (npm audit, Snyk)
+- ✅ Code quality checks (ESLint, TypeScript)
+- ✅ Automated releases (semantic-release)
+- ✅ Docker builds
+- ✅ Documentation generation
 
 ## 📄 License
 
@@ -236,9 +295,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 [Report Issues](https://github.com/yourusername/mcp-drupal-god-mod/issues)
-- 💬 [Discussions](https://github.com/yourusername/mcp-drupal-god-mod/discussions)
-- 📧 Email: support@example.com
+- 🐛 [Report Issues](https://github.com/Vincy69/mcp-drupal-server/issues)
+- 💬 [Discussions](https://github.com/Vincy69/mcp-drupal-server/discussions)
+- 📧 Contact: Via GitHub Issues
 
 ---
 
