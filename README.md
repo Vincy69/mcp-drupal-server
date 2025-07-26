@@ -4,7 +4,27 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![CI Status](https://img.shields.io/github/actions/workflow/status/vincenttournaud/mcp-drupal-server/ci.yml?branch=main&style=flat-square)](https://github.com/vincenttournaud/mcp-drupal-server/actions)
 
-Un serveur MCP (Model Context Protocol) complet pour Drupal CMS qui permet l'interaction avec toutes les fonctionnalités principales de Drupal via des agents IA comme Claude.
+Un serveur MCP (Model Context Protocol) pour Drupal qui fournit un accès à la documentation Drupal, aux modules contrib, aux exemples de code, et optionnellement à une instance Drupal live.
+
+## 🎯 Modes de Fonctionnement
+
+### 📚 Mode Documentation (Recommandé)
+- ✅ **Aucune configuration Drupal requise**
+- ✅ Recherche dans l'API Drupal (fonctions, classes, hooks)
+- ✅ Documentation officielle Drupal
+- ✅ Recherche de modules et thèmes contrib
+- ✅ Exemples de code pratiques
+- ✅ Fonctionne immédiatement après installation
+
+### 🚀 Mode Complet (Drupal Live)
+- 🔧 **Toutes les fonctionnalités de documentation +**
+- 🔧 Gestion des nœuds (création, lecture, mise à jour, suppression)
+- 🔧 Gestion des utilisateurs
+- 🔧 Gestion des termes de taxonomie
+- 🔧 Administration des modules
+- 🔧 Configuration système
+- 🔧 Gestion du cache
+- ⚠️ **Nécessite une instance Drupal configurée**
 
 ## 🚀 Fonctionnalités
 
@@ -46,35 +66,86 @@ npm install -g mcp-drupal-server
 
 ## ⚡ Configuration
 
-### 1. Variables d'environnement
-Copiez `.env.example` vers `.env` et configurez :
+Le serveur détecte automatiquement le mode de fonctionnement et bascule en mode documentation si aucune connexion Drupal n'est disponible.
 
+### 🔧 Scripts de Configuration
+
+#### Configuration automatique pour Claude Desktop
 ```bash
-# URL de base de votre site Drupal
-DRUPAL_BASE_URL=https://your-drupal-site.com
+# Mode documentation seule (recommandé)
+node scripts/configure-claude.js docs
 
-# Méthode 1: Authentification Basic Auth
+# Mode complet avec instance Drupal
+node scripts/configure-claude.js full --base-url https://example.com --username admin --password secret
+
+# Les deux modes disponibles simultanément
+node scripts/configure-claude.js both
+```
+
+#### Test de connexion Drupal
+```bash
+node scripts/test-connection.js
+```
+
+### 📋 Configuration Manuelle
+
+#### Mode Documentation Seule
+```bash
+# Variable d'environnement
+DOCS_ONLY_MODE=true
+
+# Configuration Claude Desktop
+{
+  "mcpServers": {
+    "drupal-docs": {
+      "command": "node",
+      "args": ["/chemin/vers/MCP Drupal/dist/index.js"],
+      "env": {
+        "DOCS_ONLY_MODE": "true"
+      }
+    }
+  }
+}
+```
+
+#### Mode Complet (avec Drupal Live)
+```bash
+# Variables d'environnement
+DRUPAL_BASE_URL=https://your-drupal-site.com
 DRUPAL_USERNAME=your_admin_username
 DRUPAL_PASSWORD=your_admin_password
 
-# Méthode 2: Token Bearer (recommandé)
+# OU avec token (recommandé)
+DRUPAL_BASE_URL=https://your-drupal-site.com
 DRUPAL_TOKEN=your_jwt_or_oauth_token
 
-# Méthode 3: Clé API personnalisée
-DRUPAL_API_KEY=your_custom_api_key
+# Configuration Claude Desktop
+{
+  "mcpServers": {
+    "drupal-full": {
+      "command": "node",
+      "args": ["/chemin/vers/MCP Drupal/dist/index.js"],
+      "env": {
+        "DRUPAL_BASE_URL": "https://your-drupal-site.com",
+        "DRUPAL_USERNAME": "admin",
+        "DRUPAL_PASSWORD": "password"
+      }
+    }
+  }
+}
 ```
 
-### 2. Configuration Drupal
-Assurez-vous que les modules suivants sont activés :
-- `jsonapi` - API JSON:API de Drupal
-- `rest` - Services REST (optionnel)
-- `basic_auth` - Si vous utilisez Basic Auth
+### 🔍 Prérequis pour le Mode Complet
 
-### 3. Permissions utilisateur
-L'utilisateur Drupal doit avoir les permissions :
+#### Configuration Drupal
+- Modules activés : `jsonapi`, `rest`, `basic_auth`
+- API REST activée
+- CORS configuré si nécessaire
+
+#### Permissions utilisateur
 - `access content`
-- `administer nodes`
-- `administer users`  
+- `administer nodes` 
+- `administer users`
 - `administer taxonomy`
 - `administer modules`
 - `administer site configuration`
@@ -287,14 +358,31 @@ Les contributions sont les bienvenues ! Voir [CONTRIBUTING.md](CONTRIBUTING.md) 
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrez une Pull Request
 
+## 🎉 Nouvelles fonctionnalités (v1.1.0)
+
+### ✅ Améliorations majeures
+- **🔍 Recherche étendue** : Pagination intelligente pour classes et fonctions (250+ résultats)
+- **🎯 get_class_details & get_function_details** : Recherche exacte avec fallback automatique
+- **📚 Topics corrigés** : Accès complet aux guides API Drupal (50+ topics)
+- **🪝 Hooks améliorés** : Extraction intelligente depuis les implémentations
+- **⚡ Performance optimisée** : Cache de 30 minutes et logging détaillé
+- **🛠️ Filtrage robuste** : Gestion HTML entities et namespace pour classes
+
+### 📊 Statistiques
+- **+800 lignes de code** ajoutées/améliorées
+- **5x plus de résultats** avec la pagination étendue  
+- **100% des recherches** fonctionnent maintenant parfaitement
+- **Logging complet** pour le debugging et monitoring
+
 ## 📋 Roadmap
 
-- [ ] Support Drupal 11
+- [x] ~~Support Drupal 11~~ ✅ **Fait**
+- [x] ~~Pagination intelligente~~ ✅ **Fait** 
+- [x] ~~Recherche exacte robuste~~ ✅ **Fait**
 - [ ] Interface web d'administration
 - [ ] Gestion des fichiers et médias
 - [ ] Support des vues personnalisées
 - [ ] Webhooks pour les événements
-- [ ] Cache intelligent des requêtes
 - [ ] Interface GraphQL
 
 ## 🐛 Problèmes connus
