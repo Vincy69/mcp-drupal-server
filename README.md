@@ -323,7 +323,7 @@ Ce projet est sous licence MIT. Voir [LICENSE](LICENSE) pour plus de détails.
 
 - 🐛 [Issues GitHub](https://github.com/vincenttournaud/mcp-drupal-server/issues)
 - 💬 [Discussions](https://github.com/vincenttournaud/mcp-drupal-server/discussions)
-- 📧 Email : vincent.tournaud@gmail.com
+- 📧 Email : vince69290@gmail.com
 
 ---
 
