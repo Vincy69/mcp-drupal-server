@@ -1,6 +1,6 @@
 # 🚀 MCP Drupal God Mod
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/Vincy69/mcp-drupal-server)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/Vincy69/mcp-drupal-god-mod)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
@@ -53,8 +53,8 @@ The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data
 #### Option 1: Interactive Installation Wizard (Recommended)
 ```bash
 # Clone the repository
-git clone https://github.com/Vincy69/mcp-drupal-server.git
-cd mcp-drupal-server
+git clone https://github.com/Vincy69/mcp-drupal-god-mod.git
+cd mcp-drupal-god-mod
 
 # Run the installation wizard
 npm run install:wizard
@@ -70,8 +70,8 @@ The wizard will:
 #### Option 2: Manual Installation
 ```bash
 # Clone the repository
-git clone https://github.com/Vincy69/mcp-drupal-server.git
-cd mcp-drupal-server
+git clone https://github.com/Vincy69/mcp-drupal-god-mod.git
+cd mcp-drupal-god-mod
 
 # Install dependencies
 npm install
@@ -99,7 +99,7 @@ Add to your Claude Desktop configuration file:
   "mcpServers": {
     "drupal-god-mod": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-drupal-server/dist/index.js"],
+      "args": ["/absolute/path/to/mcp-drupal-god-mod/dist/index.js"],
       "env": {
         "DRUPAL_BASE_URL": "https://your-site.com",
         "DRUPAL_USERNAME": "admin",
@@ -324,8 +324,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 [Report Issues](https://github.com/Vincy69/mcp-drupal-server/issues)
-- 💬 [Discussions](https://github.com/Vincy69/mcp-drupal-server/discussions)
+- 🐛 [Report Issues](https://github.com/Vincy69/mcp-drupal-god-mod/issues)
+- 💬 [Discussions](https://github.com/Vincy69/mcp-drupal-god-mod/discussions)
 - 📧 Contact: Via GitHub Issues
 
 ---
