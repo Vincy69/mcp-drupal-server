@@ -95,6 +95,12 @@ export class DrupalDynamicExamples {
         allExamples.push(...documentationExamples.value);
       }
 
+      // Check if we got any results from any source
+      if (allExamples.length === 0) {
+        console.error('All example sources returned empty results, using mock data...');
+        return this.getMockExamples(query, category);
+      }
+
       // Deduplicate and sort by relevance
       const uniqueExamples = this.deduplicateExamples(allExamples);
       const sortedExamples = this.sortByRelevance(uniqueExamples, query);
@@ -481,9 +487,9 @@ export class DrupalDynamicExamples {
       // This could query multiple sources to get current category taxonomies
       const response = await this.drupalApiClient.get('/taxonomy/categories');
       return response.data.map((cat: any) => cat.name);
-    } catch {
-      // If API fails, return empty array - no fallback data
-      return [];
+    } catch (error) {
+      // If API fails, throw error to trigger fallback to mock data
+      throw new Error(`Failed to fetch live categories: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

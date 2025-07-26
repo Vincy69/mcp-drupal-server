@@ -446,11 +446,27 @@ export class DrupalMCPServer {
               return { content: [{ type: "text", text: JSON.stringify(mockCategories, null, 2) }] };
             }
           case "get_examples_by_category":
-            const categoryExamples = await this.examples.getExamplesByCategory(args?.category as string, args?.drupal_version as any);
-            return { content: [{ type: "text", text: JSON.stringify(categoryExamples, null, 2) }] };
+            try {
+              const categoryExamples = await this.examples.getExamplesByCategory(args?.category as string, args?.drupal_version as any);
+              return { content: [{ type: "text", text: JSON.stringify(categoryExamples, null, 2) }] };
+            } catch (error) {
+              console.error('Category examples failed, using mock data:', error);
+              const mockExamples = this.docsClient.getMockCodeExamples();
+              const categoryFilter = args?.category as string;
+              const filtered = categoryFilter ? mockExamples.filter(ex => ex.category.toLowerCase().includes(categoryFilter.toLowerCase())) : mockExamples;
+              return { content: [{ type: "text", text: JSON.stringify(filtered, null, 2) }] };
+            }
           case "get_examples_by_tag":
-            const tagExamples = await this.examples.getExamplesByTag(args?.tag as string);
-            return { content: [{ type: "text", text: JSON.stringify(tagExamples, null, 2) }] };
+            try {
+              const tagExamples = await this.examples.getExamplesByTag(args?.tag as string);
+              return { content: [{ type: "text", text: JSON.stringify(tagExamples, null, 2) }] };
+            } catch (error) {
+              console.error('Tag examples failed, using mock data:', error);
+              const mockExamples = this.docsClient.getMockCodeExamples();
+              const tagFilter = args?.tag as string;
+              const filtered = tagFilter ? mockExamples.filter(ex => ex.tags.some((tag: string) => tag.toLowerCase().includes(tagFilter.toLowerCase()))) : mockExamples;
+              return { content: [{ type: "text", text: JSON.stringify(filtered, null, 2) }] };
+            }
           
           // Drupal Code Analysis tools
           case "analyze_drupal_file":
