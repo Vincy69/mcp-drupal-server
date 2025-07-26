@@ -358,19 +358,19 @@ Vous êtes un expert développeur Drupal avec accès au serveur MCP Drupal. Util
 ## 💡 Exemples d'usage
 
 **Question : "Comment créer un formulaire custom ?"**
-```
+
 1. search_drupal_topics avec "form"
 2. search_drupal_functions avec "form"  
 3. search_code_examples avec "custom form"
 4. search_contrib_modules avec "form builder"
-```
+
 
 **Question : "Comment utiliser EntityTypeManager ?"**
-```
+
 1. get_class_details avec "EntityTypeManager"
 2. search_code_examples avec "EntityTypeManager"
 3. search_drupal_functions avec "entity"
-```
+``
 
 ## ✅ Bonnes pratiques
 
