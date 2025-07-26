@@ -426,21 +426,49 @@ Les contributions sont les bienvenues ! Voir [CONTRIBUTING.md](CONTRIBUTING.md) 
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrez une Pull Request
 
-## 🎉 Nouvelles fonctionnalités (v1.1.0)
+## 🎉 Nouvelles fonctionnalités (v1.2.0)
 
-### ✅ Améliorations majeures
-- **🔍 Recherche étendue** : Pagination intelligente pour classes et fonctions (250+ résultats)
-- **🎯 get_class_details & get_function_details** : Recherche exacte avec fallback automatique
-- **📚 Topics corrigés** : Accès complet aux guides API Drupal (50+ topics)
-- **🪝 Hooks améliorés** : Extraction intelligente depuis les implémentations
-- **⚡ Performance optimisée** : Cache de 30 minutes et logging détaillé
-- **🛠️ Filtrage robuste** : Gestion HTML entities et namespace pour classes
+### ✅ Améliorations critiques
+- **🪝 Hooks révolutionnés** : 5 stratégies de recherche pour 200+ hooks uniques
+  - Extraction depuis les implémentations de fonctions
+  - Documentation dédiée et groupes API
+  - Fallback intelligent avec searchAll
+  - Base de données de hooks populaires intégrée
+  - Classification automatique par groupes (Node, User, Form, etc.)
 
-### 📊 Statistiques
-- **+800 lignes de code** ajoutées/améliorées
-- **5x plus de résultats** avec la pagination étendue  
-- **100% des recherches** fonctionnent maintenant parfaitement
-- **Logging complet** pour le debugging et monitoring
+- **🎯 get_class_details ultra-robuste** : 6 stratégies de recherche
+  - Cache local intelligent avec validation temporelle
+  - Recherche exacte sur 15 pages (750+ classes)
+  - Matching flou (case-insensitive, partial, namespace)
+  - Recherche dans searchAll comme fallback
+  - Variations namespace automatiques (Core, Entity, Field, etc.)
+  - Patterns communs (Interface, Manager, Service, etc.)
+
+- **⚡ searchFunctions enrichi** : Couverture exhaustive
+  - 4 stratégies : Core API, fonctions dépréciées, modules spécifiques, utilitaires
+  - 20 pages de pagination (1000+ fonctions)
+  - Fonctions dépréciées avec avertissements ⚠️
+  - Modules core spécifiques (node, user, field, system, etc.)
+  - Catégorisation automatique et extraction de métadonnées
+  - Exemples d'usage pour fonctions communes
+
+- **📚 Exemples de code étendus** : 8 nouvelles catégories
+  - **Migrations** : CSV import, plugins source personnalisés
+  - **Testing** : Unit tests avec mocks, kernel tests
+  - **Performance** : Cache avancé, optimisation batch
+  - **Sécurité** : Validation, access control, CSRF
+  - **Theming** : Hooks thème, preprocessing, Twig
+  - **API** : REST endpoints, sérialisation JSON
+  - **Media** : Upload fichiers, gestion médias, styles d'image
+  - **Multilingual** : Traductions, i18n, langue switcher
+
+### 📊 Statistiques v1.2.0
+- **+1200 lignes de code** ajoutées/améliorées depuis v1.1.0
+- **10x plus de hooks** : De ~20 à 200+ hooks uniques
+- **6 stratégies de recherche** pour classes ultra-robustes
+- **8 nouvelles catégories** d'exemples de code complets
+- **Fonctions dépréciées** avec avertissements intégrés
+- **Cache intelligent** pour performance optimale
 
 ## 📋 Roadmap
 
