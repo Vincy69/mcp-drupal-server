@@ -1,6 +1,6 @@
-# 🚀 Drupal Development with MCP God Mod
+# 🚀 Drupal Development with MCP Drupal Server
 
-You have access to the **MCP Drupal God Mod** server - the ultimate Drupal development assistant. This server provides dynamic, real-time access to Drupal documentation, code examples, module analysis, and intelligent code generation.
+You have access to the **MCP Drupal Server** - the ultimate Drupal development assistant. This server provides dynamic, real-time access to Drupal documentation, code examples, module analysis, and intelligent code generation.
 
 ## 🎯 Core Principles
 
@@ -279,4 +279,4 @@ analyze_upgrade_path("./project", "9", "10")
 
 ---
 
-**Remember**: This is God Mode for Drupal - use it wisely and always verify critical code!
+**Remember**: This is the ultimate Drupal development server - use it wisely and always verify critical code!

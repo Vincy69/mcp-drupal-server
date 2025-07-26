@@ -1,12 +1,12 @@
-# 🚀 MCP Drupal God Mod
+# 🚀 MCP Drupal Server
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/Vincy69/mcp-drupal-god-mod)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/Vincy69/mcp-drupal-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
-The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data aggregation, hybrid architecture, and intelligent analysis tools. This isn't just another MCP server; it's the God Mode for Drupal development.
+The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data aggregation, hybrid architecture, and intelligent analysis tools. This isn't just another MCP server; it's the professional solution for Drupal development.
 
-## 🎯 Why God Mod?
+## 🎯 Why MCP Drupal Server?
 
 - **100% Dynamic Architecture** - No hardcoded data, everything from live APIs
 - **Hybrid Intelligence** - Seamlessly combines documentation with live Drupal instances
@@ -53,8 +53,8 @@ The **Ultimate MCP Server for Drupal CMS** - A powerhouse combining dynamic data
 #### Option 1: Interactive Installation Wizard (Recommended)
 ```bash
 # Clone the repository
-git clone https://github.com/Vincy69/mcp-drupal-god-mod.git
-cd mcp-drupal-god-mod
+git clone https://github.com/Vincy69/mcp-drupal-server.git
+cd mcp-drupal-server
 
 # Run the installation wizard
 npm run install:wizard
@@ -70,8 +70,8 @@ The wizard will:
 #### Option 2: Manual Installation
 ```bash
 # Clone the repository
-git clone https://github.com/Vincy69/mcp-drupal-god-mod.git
-cd mcp-drupal-god-mod
+git clone https://github.com/Vincy69/mcp-drupal-server.git
+cd mcp-drupal-server
 
 # Install dependencies
 npm install
@@ -97,9 +97,9 @@ Add to your Claude Desktop configuration file:
 ```json
 {
   "mcpServers": {
-    "drupal-god-mod": {
+    "drupal-server": {
       "command": "node",
-      "args": ["/absolute/path/to/mcp-drupal-god-mod/dist/index.js"],
+      "args": ["/absolute/path/to/mcp-drupal-server/dist/index.js"],
       "env": {
         "DRUPAL_BASE_URL": "https://your-site.com",
         "DRUPAL_USERNAME": "admin",
@@ -117,9 +117,9 @@ Add to your Claude Desktop configuration file:
 Create a `CLAUDE.md` file in your Drupal project root:
 
 ```markdown
-# 🚀 Drupal Development with MCP God Mod
+# 🚀 Drupal Development with MCP Drupal Server
 
-You have access to the **MCP Drupal God Mod** server - the ultimate Drupal development assistant.
+You have access to the **MCP Drupal Server** - the ultimate Drupal development assistant.
 
 ## 🛠️ Essential Tools
 
@@ -324,8 +324,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 [Report Issues](https://github.com/Vincy69/mcp-drupal-god-mod/issues)
-- 💬 [Discussions](https://github.com/Vincy69/mcp-drupal-god-mod/discussions)
+- 🐛 [Report Issues](https://github.com/Vincy69/mcp-drupal-server/issues)
+- 💬 [Discussions](https://github.com/Vincy69/mcp-drupal-server/discussions)
 - 📧 Contact: Via GitHub Issues
 
 ---
