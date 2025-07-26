@@ -1,6 +1,8 @@
 # 🚀 Drupal Development with MCP Drupal Server
 
-You have access to the **MCP Drupal Server** - the ultimate Drupal development assistant. This server provides dynamic, real-time access to Drupal documentation, code examples, module analysis, and intelligent code generation.
+You have access to the **MCP Drupal Server** - the ultimate Drupal development assistant optimized for **Claude Code**. This server provides dynamic, real-time access to Drupal documentation, code examples, module analysis, and intelligent code generation.
+
+**🔥 Claude Code Integration**: This MCP server is auto-detected when working in Drupal projects, giving you instant access to comprehensive Drupal development tools.
 
 ## 🎯 Core Principles
 
