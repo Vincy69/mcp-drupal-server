@@ -766,4 +766,216 @@ export const drupalTools: Tool[] = [
       required: ["tag"],
     },
   },
+
+  // Drupal Code Analysis Tools
+  {
+    name: "analyze_drupal_file",
+    description: "Analyze a Drupal file for structure, hooks, functions, classes, issues, and metrics",
+    inputSchema: {
+      type: "object",
+      properties: {
+        file_path: {
+          type: "string",
+          description: "The absolute path to the Drupal file to analyze",
+        },
+        include_summary: {
+          type: "boolean",
+          description: "Whether to include a formatted summary report",
+          default: true,
+        },
+      },
+      required: ["file_path"],
+    },
+  },
+  {
+    name: "check_drupal_standards",
+    description: "Check a Drupal file against coding standards and best practices",
+    inputSchema: {
+      type: "object",
+      properties: {
+        file_path: {
+          type: "string",
+          description: "The absolute path to the Drupal file to check",
+        },
+        drupal_version: {
+          type: "string",
+          description: "Target Drupal version for standards checking",
+          enum: ["9.x", "10.x", "11.x"],
+          default: "11.x",
+        },
+      },
+      required: ["file_path"],
+    },
+  },
+  {
+    name: "generate_module_skeleton",
+    description: "Generate a complete Drupal module skeleton with configurable options",
+    inputSchema: {
+      type: "object",
+      properties: {
+        module_info: {
+          type: "object",
+          description: "Module information",
+          properties: {
+            name: { type: "string", description: "Human-readable module name" },
+            machine_name: { type: "string", description: "Machine name (lowercase, underscores)" },
+            description: { type: "string", description: "Module description" },
+            package_name: { type: "string", description: "Package name", default: "Custom" },
+            version: { type: "string", description: "Module version", default: "1.0.0" },
+            core_version_requirement: { 
+              type: "string", 
+              description: "Drupal core version requirement", 
+              default: "^10.2 || ^11" 
+            },
+            dependencies: {
+              type: "array",
+              items: { type: "string" },
+              description: "Module dependencies",
+              default: []
+            },
+            type: {
+              type: "string",
+              enum: ["module", "theme", "profile"],
+              description: "Type of extension",
+              default: "module"
+            }
+          },
+          required: ["name", "machine_name", "description"]
+        },
+        options: {
+          type: "object",
+          description: "Generation options",
+          properties: {
+            include_install: { type: "boolean", description: "Include .install file", default: true },
+            include_routing: { type: "boolean", description: "Include routing.yml", default: true },
+            include_services: { type: "boolean", description: "Include services.yml", default: false },
+            include_hooks: {
+              type: "array",
+              items: { type: "string" },
+              description: "Hooks to implement",
+              default: ["hook_help"]
+            },
+            include_controller: { type: "boolean", description: "Include controller class", default: true },
+            include_form: { type: "boolean", description: "Include form class", default: false },
+            include_entity: { type: "boolean", description: "Include entity class", default: false },
+            include_plugin: { type: "boolean", description: "Include block plugin", default: false },
+            include_permissions: { type: "boolean", description: "Include permissions.yml", default: true },
+            include_config_schema: { type: "boolean", description: "Include config schema", default: false }
+          }
+        },
+        output_path: {
+          type: "string",
+          description: "Output directory path",
+          default: "./modules/custom"
+        }
+      },
+      required: ["module_info"]
+    },
+  },
+  {
+    name: "get_module_template_info",
+    description: "Get information about available module templates and hooks",
+    inputSchema: {
+      type: "object",
+      properties: {
+        show_structure: {
+          type: "boolean",
+          description: "Show recommended module structure",
+          default: true
+        }
+      }
+    },
+  },
+
+  // Hybrid Intelligence Tools (combine docs + live when available)
+  {
+    name: "hybrid_analyze_module",
+    description: "Intelligent module analysis combining documentation with live installation status",
+    inputSchema: {
+      type: "object",
+      properties: {
+        module_name: {
+          type: "string",
+          description: "Module machine name to analyze",
+        },
+        include_recommendations: {
+          type: "boolean",
+          description: "Whether to include actionable recommendations",
+          default: true,
+        },
+      },
+      required: ["module_name"],
+    },
+  },
+  {
+    name: "hybrid_analyze_function",
+    description: "Intelligent function analysis combining API documentation with live usage patterns",
+    inputSchema: {
+      type: "object",
+      properties: {
+        function_name: {
+          type: "string",
+          description: "Drupal function name to analyze",
+        },
+        include_examples: {
+          type: "boolean",
+          description: "Whether to include code examples",
+          default: true,
+        },
+      },
+      required: ["function_name"],
+    },
+  },
+  {
+    name: "hybrid_analyze_site",
+    description: "Comprehensive site analysis combining best practices with current site state",
+    inputSchema: {
+      type: "object",
+      properties: {
+        include_security_audit: {
+          type: "boolean",
+          description: "Whether to include security recommendations",
+          default: true,
+        },
+        include_performance_tips: {
+          type: "boolean",
+          description: "Whether to include performance recommendations",
+          default: true,
+        },
+      },
+    },
+  },
+  {
+    name: "hybrid_analyze_content_type",
+    description: "Content type analysis combining documentation with existing content structure",
+    inputSchema: {
+      type: "object",
+      properties: {
+        content_type: {
+          type: "string",
+          description: "Content type machine name (e.g., 'article', 'page')",
+        },
+        suggest_improvements: {
+          type: "boolean",
+          description: "Whether to suggest structural improvements",
+          default: true,
+        },
+      },
+      required: ["content_type"],
+    },
+  },
+  {
+    name: "get_mode_status",
+    description: "Get current server mode and connection status information",
+    inputSchema: {
+      type: "object",
+      properties: {
+        include_capabilities: {
+          type: "boolean",
+          description: "Whether to include detailed capability information",
+          default: true,
+        },
+      },
+    },
+  },
 ];

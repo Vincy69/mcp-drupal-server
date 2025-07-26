@@ -12,7 +12,11 @@ import {
 import { DrupalClient } from "./drupal-client.js";
 import { DrupalDocsClient } from "./drupal-docs-client.js";
 import { DrupalContribClient } from "./drupal-contrib-client.js";
-import { DrupalExamples } from "./drupal-examples.js";
+import { DrupalDynamicExamples } from "./drupal-dynamic-examples.js";
+import { DrupalCodeAnalyzer } from "./drupal-code-analyzer.js";
+import { DrupalModuleGenerator } from "./drupal-module-generator.js";
+import { DrupalModeManager, DrupalServerMode } from "./drupal-mode-manager.js";
+import { DrupalHybridTools } from "./drupal-hybrid-tools.js";
 import { drupalTools } from "./tools/index.js";
 
 export class DrupalMCPServer {
@@ -20,8 +24,12 @@ export class DrupalMCPServer {
   private drupalClient: DrupalClient | null;
   private docsClient: DrupalDocsClient;
   private contribClient: DrupalContribClient;
-  private examples: DrupalExamples;
-  private docsOnlyMode: boolean;
+  private examples: DrupalDynamicExamples;
+  private codeAnalyzer: DrupalCodeAnalyzer;
+  private moduleGenerator: DrupalModuleGenerator;
+  private modeManager: DrupalModeManager;
+  private hybridTools: DrupalHybridTools;
+  private docsOnlyMode: boolean; // Kept for backward compatibility
 
   constructor() {
     this.server = new Server(
@@ -40,44 +48,70 @@ export class DrupalMCPServer {
     // Always initialize documentation clients first
     this.docsClient = new DrupalDocsClient();
     this.contribClient = new DrupalContribClient();
-    this.examples = new DrupalExamples();
+    this.examples = new DrupalDynamicExamples();
+    this.codeAnalyzer = new DrupalCodeAnalyzer();
+    this.moduleGenerator = new DrupalModuleGenerator();
+    
+    // Initialize Mode Manager
+    this.hybridTools = new DrupalHybridTools();
+    this.modeManager = new DrupalModeManager({
+      mode: DrupalServerMode.SMART_FALLBACK,
+      enableAutoRecovery: true,
+      healthCheckInterval: 30000 // 30 seconds
+    });
     
     // Initialize with null Drupal client
     this.drupalClient = null;
     this.docsOnlyMode = true;
 
     this.setupHandlers();
-    this.initializeDrupalConnection();
+    this.initializeIntelligentMode();
   }
 
-  private async initializeDrupalConnection() {
-    // Force docs-only mode if explicitly set
-    if (process.env.DOCS_ONLY_MODE === 'true') {
-      console.error("Drupal MCP server running in documentation-only mode (forced)");
-      return;
-    }
-
-    // Check if we have connection details
-    const hasConnectionDetails = process.env.DRUPAL_BASE_URL && 
-                                process.env.DRUPAL_BASE_URL !== 'http://localhost' &&
-                                (process.env.DRUPAL_USERNAME || process.env.DRUPAL_TOKEN || process.env.DRUPAL_API_KEY);
-
-    if (!hasConnectionDetails) {
-      console.error("Drupal MCP server running in documentation-only mode (no connection details)");
-      return;
-    }
-
+  private async initializeIntelligentMode() {
     try {
-      // Initialize Drupal client
-      this.drupalClient = new DrupalClient();
+      const mode = await this.modeManager.initialize();
       
-      // Test the connection
-      await this.testDrupalConnection();
-      
-      this.docsOnlyMode = false;
-      console.error("Drupal MCP server running in full mode (live connection established)");
+      switch (mode) {
+        case DrupalServerMode.DOCS_ONLY:
+          this.docsOnlyMode = true;
+          this.drupalClient = null;
+          console.error("[Server] Intelligent Mode: Documentation Only");
+          break;
+          
+        case DrupalServerMode.LIVE_ONLY:
+        case DrupalServerMode.HYBRID:
+        case DrupalServerMode.SMART_FALLBACK:
+          await this.initializeLiveConnection();
+          break;
+      }
     } catch (error) {
-      console.error(`Drupal connection failed, falling back to documentation-only mode: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`[Server] Mode initialization failed: ${error instanceof Error ? error.message : String(error)}`);
+      this.docsOnlyMode = true;
+      this.drupalClient = null;
+    }
+  }
+
+  private async initializeLiveConnection() {
+    const connectionStatus = this.modeManager.getConnectionStatus();
+    
+    if (connectionStatus.isConnected) {
+      try {
+        this.drupalClient = new DrupalClient();
+        await this.testDrupalConnection();
+        
+        this.docsOnlyMode = false;
+        console.error(`[Server] Live connection established (${connectionStatus.responseTime}ms)`);
+        
+        const mode = this.modeManager.getCurrentMode();
+        console.error(`[Server] Running in ${mode} mode with live capabilities`);
+      } catch (error) {
+        console.error(`[Server] Live connection setup failed: ${error instanceof Error ? error.message : String(error)}`);
+        this.drupalClient = null;
+        this.docsOnlyMode = true;
+      }
+    } else {
+      console.error(`[Server] No live connection available: ${connectionStatus.error}`);
       this.drupalClient = null;
       this.docsOnlyMode = true;
     }
@@ -195,8 +229,20 @@ export class DrupalMCPServer {
       const { name, arguments: args } = request.params;
 
       try {
-        // Live Drupal operations - only available if not in docs-only mode
-        if (!this.docsOnlyMode && this.drupalClient) {
+        // Intelligent tool routing with fallback
+        const toolMode = this.modeManager.getOptimalModeForTool(name);
+        
+        if (toolMode === null) {
+          return {
+            content: [{
+              type: "text",
+              text: `❌ Tool "${name}" is not available in current mode (${this.modeManager.getCurrentMode()}). Live connection required but not available.`
+            }]
+          };
+        }
+        
+        // Live Drupal operations - with intelligent fallback
+        if (toolMode === 'live' && this.drupalClient) {
           switch (name) {
             case "get_node":
               return await this.drupalClient.getNode(args?.id as string);
@@ -245,13 +291,9 @@ export class DrupalMCPServer {
             case "get_site_info":
               return await this.drupalClient.getSiteInfo();
           }
-        } else if (["get_node", "create_node", "update_node", "delete_node", "list_nodes", 
-                   "get_user", "create_user", "update_user", "delete_user", "list_users",
-                   "get_taxonomy_term", "create_taxonomy_term", "update_taxonomy_term", "delete_taxonomy_term", "list_taxonomy_terms",
-                   "execute_query", "get_module_list", "enable_module", "disable_module",
-                   "get_configuration", "set_configuration", "clear_cache", "get_site_info"].includes(name)) {
-          
-          const helpMessage = this.generateHelpMessage(name);
+        } else if (toolMode === null || (toolMode === 'live' && !this.drupalClient)) {
+          // Tool requires live connection but it's not available
+          const helpMessage = this.generateIntelligentHelpMessage(name);
           return { 
             content: [{ 
               type: "text", 
@@ -370,24 +412,162 @@ export class DrupalMCPServer {
           
           // Drupal Code Examples tools
           case "search_code_examples":
-            const searchResults = this.examples.searchExamples(args?.query as string);
-            const filteredResults = args?.category || args?.drupal_version ? 
-              this.examples.getExamples(args?.category as string, args?.drupal_version as string)
-                .filter(example => searchResults.some(result => result.title === example.title)) :
-              searchResults;
-            return { content: [{ type: "text", text: JSON.stringify(filteredResults, null, 2) }] };
+            const searchResults = await this.examples.searchExamples(args?.query as string, args?.category as string);
+            return { content: [{ type: "text", text: JSON.stringify(searchResults, null, 2) }] };
           case "get_example_by_title":
-            const example = this.examples.getExampleByTitle(args?.title as string);
+            const titleResults = await this.examples.searchExamples(args?.title as string);
+            const example = titleResults.find(ex => ex.title === args?.title) || null;
             return { content: [{ type: "text", text: JSON.stringify(example, null, 2) }] };
           case "list_example_categories":
-            const categories = this.examples.getCategories();
+            const categories = await this.examples.getCategories();
             return { content: [{ type: "text", text: JSON.stringify(categories, null, 2) }] };
           case "get_examples_by_category":
-            const categoryExamples = this.examples.getExamples(args?.category as string, args?.drupal_version as string);
+            const categoryExamples = await this.examples.getExamplesByCategory(args?.category as string, args?.drupal_version as string);
             return { content: [{ type: "text", text: JSON.stringify(categoryExamples, null, 2) }] };
           case "get_examples_by_tag":
-            const tagExamples = this.examples.getExamplesByTag(args?.tag as string);
+            const tagExamples = await this.examples.getExamplesByTag(args?.tag as string);
             return { content: [{ type: "text", text: JSON.stringify(tagExamples, null, 2) }] };
+          
+          // Drupal Code Analysis tools
+          case "analyze_drupal_file":
+            const analysis = await this.codeAnalyzer.analyzeDrupalFile(args?.file_path as string);
+            const analysisText = args?.include_summary !== false ? 
+              this.codeAnalyzer.generateSummary(analysis) + "\n\n" + JSON.stringify(analysis, null, 2) :
+              JSON.stringify(analysis, null, 2);
+            return { content: [{ type: "text", text: analysisText }] };
+          case "check_drupal_standards":
+            const standardsAnalysis = await this.codeAnalyzer.analyzeDrupalFile(args?.file_path as string);
+            const issues = standardsAnalysis.issues.filter(issue => 
+              issue.severity === 'critical' || issue.severity === 'major'
+            );
+            const standardsReport = this.generateStandardsReport(standardsAnalysis, args?.drupal_version as string);
+            return { content: [{ type: "text", text: standardsReport }] };
+          case "generate_module_skeleton":
+            const moduleInfo = args?.module_info as any;
+            const options = args?.options as any || {};
+            const outputPath = args?.output_path as string || './modules/custom';
+            
+            // Set defaults
+            const fullModuleInfo = {
+              packageName: 'Custom',
+              version: '1.0.0',
+              coreVersionRequirement: '^10.2 || ^11',
+              dependencies: [],
+              type: 'module',
+              ...moduleInfo
+            };
+            
+            const fullOptions = {
+              includeInstall: true,
+              includeRouting: true,
+              includeServices: false,
+              includeHooks: ['hook_help'],
+              includeController: true,
+              includeForm: false,
+              includeEntity: false,
+              includePlugin: false,
+              includePermissions: true,
+              includeConfigSchema: false,
+              ...options
+            };
+            
+            try {
+              const generatedFiles = await this.moduleGenerator.generateModuleSkeleton(
+                fullModuleInfo,
+                fullOptions,
+                outputPath
+              );
+              
+              const summary = `## Module Generated Successfully! 🎉\n\n` +
+                `**Module:** ${fullModuleInfo.name} (${fullModuleInfo.machineName})\n` +
+                `**Location:** ${outputPath}/${fullModuleInfo.machineName}/\n` +
+                `**Files Created:** ${generatedFiles.length}\n\n` +
+                `### Generated Files:\n` +
+                generatedFiles.map(file => `- **${file.path.split('/').pop()}**: ${file.description}`).join('\n') +
+                `\n\n### Next Steps:\n` +
+                `1. Copy the module to your Drupal installation's modules/custom/ directory\n` +
+                `2. Enable the module: \`drush en ${fullModuleInfo.machineName}\`\n` +
+                `3. Configure permissions at /admin/people/permissions\n` +
+                `4. Access admin page at /admin/config/system/${fullModuleInfo.machineName}\n`;
+                
+              return { content: [{ type: "text", text: summary }] };
+            } catch (error) {
+              return {
+                content: [{
+                  type: "text",
+                  text: `Error generating module: ${error instanceof Error ? error.message : String(error)}`
+                }]
+              };
+            }
+          case "get_module_template_info":
+            const availableHooks = await this.moduleGenerator.getAvailableHooks();
+            const structure = args?.show_structure !== false ? this.moduleGenerator.getRecommendedStructure() : '';
+            
+            const templateInfo = `## Drupal Module Generator\n\n` +
+              `### Available Hooks\n` +
+              availableHooks.map(hook => `- ${hook}`).join('\n') +
+              `\n\n### Module Options\n` +
+              `- **include_install**: Database schema and installation hooks\n` +
+              `- **include_routing**: URL routing definitions\n` +
+              `- **include_services**: Dependency injection services\n` +
+              `- **include_controller**: HTTP request controllers\n` +
+              `- **include_form**: Configuration forms\n` +
+              `- **include_entity**: Content entities\n` +
+              `- **include_plugin**: Block plugins\n` +
+              `- **include_permissions**: Custom permissions\n` +
+              `- **include_config_schema**: Configuration schemas\n` +
+              (structure ? `\n${structure}` : '');
+              
+            return { content: [{ type: "text", text: templateInfo }] };
+          
+          // Hybrid Intelligence Tools
+          case "hybrid_analyze_module":
+            const moduleAnalysis = await this.hybridTools.analyzeModule(
+              args?.module_name as string,
+              this.drupalClient || undefined
+            );
+            const moduleReport = this.formatHybridResult(moduleAnalysis, 'Module Analysis');
+            return { content: [{ type: "text", text: moduleReport }] };
+          case "hybrid_analyze_function":
+            const functionAnalysis = await this.hybridTools.analyzeFunction(
+              args?.function_name as string,
+              this.drupalClient || undefined
+            );
+            const functionReport = this.formatHybridResult(functionAnalysis, 'Function Analysis');
+            return { content: [{ type: "text", text: functionReport }] };
+          case "hybrid_analyze_site":
+            const siteAnalysis = await this.hybridTools.analyzeSite(
+              this.drupalClient || undefined
+            );
+            const siteReport = this.formatHybridResult(siteAnalysis, 'Site Analysis');
+            return { content: [{ type: "text", text: siteReport }] };
+          case "hybrid_analyze_content_type":
+            const contentTypeAnalysis = await this.hybridTools.analyzeContentType(
+              args?.content_type as string,
+              this.drupalClient || undefined
+            );
+            const contentTypeReport = this.formatHybridResult(contentTypeAnalysis, 'Content Type Analysis');
+            return { content: [{ type: "text", text: contentTypeReport }] };
+          case "get_mode_status":
+            const modeStats = this.modeManager.getModeStats();
+            const connectionStatus = this.modeManager.getConnectionStatus();
+            
+            const statusReport = `## 🚀 MCP Drupal Server Status\n\n` +
+              `**Current Mode:** ${modeStats.currentMode}\n` +
+              `**Live Connection:** ${connectionStatus.isConnected ? '✅ Connected' : '❌ Disconnected'}\n` +
+              `**Response Time:** ${connectionStatus.responseTime || 'N/A'}ms\n` +
+              `**Uptime:** ${Math.round(modeStats.uptime / 1000)}s\n` +
+              `**Reconnect Attempts:** ${modeStats.reconnectAttempts}\n\n` +
+              `### Available Capabilities\n` +
+              modeStats.capabilities.map(cap => `- ${cap}`).join('\n') +
+              (connectionStatus.error ? `\n\n### Connection Error\n${connectionStatus.error}` : '') +
+              `\n\n### Mode Descriptions\n` +
+              `- **docs_only**: Documentation and examples only\n` +
+              `- **live_only**: Live Drupal instance operations only\n` +
+              `- **hybrid**: Best of both worlds - docs + live\n` +
+              `- **smart_fallback**: Intelligent switching based on availability\n`;
+            
+            return { content: [{ type: "text", text: statusReport }] };
           
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
@@ -446,10 +626,263 @@ export class DrupalMCPServer {
     return baseMessage + alternativeHelp + setupHelp;
   }
 
+  private generateIntelligentHelpMessage(toolName: string): string {
+    const currentMode = this.modeManager.getCurrentMode();
+    const connectionStatus = this.modeManager.getConnectionStatus();
+    
+    let message = `🤖 **Intelligent Help for "${toolName}"**\n\n`;
+    
+    message += `**Current Mode:** ${currentMode}\n`;
+    message += `**Live Connection:** ${connectionStatus.isConnected ? '✅ Connected' : '❌ Disconnected'}\n\n`;
+    
+    if (!connectionStatus.isConnected) {
+      message += `📍 **Why this tool isn't available:**\n`;
+      message += `This tool requires a live Drupal connection, but none is currently available.\n`;
+      if (connectionStatus.error) {
+        message += `Connection error: ${connectionStatus.error}\n`;
+      }
+      message += `\n`;
+    }
+    
+    // Suggest alternatives based on tool category
+    const alternatives = this.getToolAlternatives(toolName);
+    if (alternatives.length > 0) {
+      message += `💡 **Available Alternatives:**\n`;
+      alternatives.forEach(alt => {
+        message += `- **${alt.tool}**: ${alt.description}\n`;
+      });
+      message += `\n`;
+    }
+    
+    // Suggest hybrid tools
+    const hybridAlternatives = this.getHybridAlternatives(toolName);
+    if (hybridAlternatives.length > 0) {
+      message += `🎆 **Intelligent Hybrid Tools:**\n`;
+      hybridAlternatives.forEach(alt => {
+        message += `- **${alt.tool}**: ${alt.description}\n`;
+      });
+      message += `\n`;
+    }
+    
+    // Connection recovery options
+    if (!connectionStatus.isConnected) {
+      message += `🔧 **Connection Recovery Options:**\n`;
+      message += `1. Check your Drupal site configuration\n`;
+      message += `2. Verify network connectivity\n`;
+      message += `3. Use \`get_mode_status\` to check server status\n`;
+      message += `4. Try hybrid tools for documentation-based insights\n\n`;
+    }
+    
+    message += `📚 **Learn More:**\n`;
+    message += `Use \`get_mode_status\` for detailed server information and capabilities.`;
+    
+    return message;
+  }
+  
+  private getToolAlternatives(toolName: string): Array<{tool: string, description: string}> {
+    const alternativeMap: {[key: string]: Array<{tool: string, description: string}>} = {
+      'get_node': [
+        { tool: 'search_code_examples', description: 'Find node manipulation examples' },
+        { tool: 'search_drupal_functions', description: 'Learn about node API functions' }
+      ],
+      'create_node': [
+        { tool: 'generate_module_skeleton', description: 'Generate module with node creation examples' },
+        { tool: 'search_code_examples', description: 'Find node creation code patterns' }
+      ],
+      'get_user': [
+        { tool: 'search_drupal_functions', description: 'Learn about user API functions' },
+        { tool: 'search_code_examples', description: 'Find user management examples' }
+      ],
+      'get_module_list': [
+        { tool: 'search_contrib_modules', description: 'Explore available contributed modules' },
+        { tool: 'get_popular_modules', description: 'See popular community modules' }
+      ]
+    };
+    
+    return alternativeMap[toolName] || [];
+  }
+  
+  private getHybridAlternatives(toolName: string): Array<{tool: string, description: string}> {
+    const liveToolToHybrid: {[key: string]: Array<{tool: string, description: string}>} = {
+      'get_node': [
+        { tool: 'hybrid_analyze_content_type', description: 'Analyze content types with docs + live data' }
+      ],
+      'get_module_list': [
+        { tool: 'hybrid_analyze_site', description: 'Comprehensive site analysis with recommendations' },
+        { tool: 'hybrid_analyze_module', description: 'Analyze specific modules with installation status' }
+      ],
+      'get_user': [
+        { tool: 'hybrid_analyze_site', description: 'Site analysis including user management insights' }
+      ],
+      'get_site_info': [
+        { tool: 'hybrid_analyze_site', description: 'Intelligent site analysis with best practices' },
+        { tool: 'get_mode_status', description: 'Current server status and capabilities' }
+      ]
+    };
+    
+    return liveToolToHybrid[toolName] || [
+      { tool: 'hybrid_analyze_site', description: 'Comprehensive site analysis combining docs and live data' }
+    ];
+  }
+
+  private generateStandardsReport(analysis: any, targetVersion: string = '11.x'): string {
+    const { fileName, fileType, issues } = analysis;
+    
+    let report = `## Drupal Standards Check: ${fileName}\n\n`;
+    report += `**File Type:** ${fileType}\n`;
+    report += `**Target Drupal Version:** ${targetVersion}\n\n`;
+    
+    const criticalIssues = issues.filter((issue: any) => issue.severity === 'critical');
+    const majorIssues = issues.filter((issue: any) => issue.severity === 'major');
+    const minorIssues = issues.filter((issue: any) => issue.severity === 'minor');
+    
+    if (issues.length === 0) {
+      report += `### ✅ No Issues Found\n\nThis file appears to follow Drupal coding standards.\n`;
+    } else {
+      report += `### 📊 Issues Summary\n`;
+      report += `- **Critical:** ${criticalIssues.length}\n`;
+      report += `- **Major:** ${majorIssues.length}\n`;
+      report += `- **Minor:** ${minorIssues.length}\n\n`;
+      
+      if (criticalIssues.length > 0) {
+        report += `### 🚨 Critical Issues (${criticalIssues.length})\n`;
+        criticalIssues.forEach((issue: any) => {
+          report += `- **Line ${issue.line}:** ${issue.message} (${issue.rule})\n`;
+        });
+        report += `\n`;
+      }
+      
+      if (majorIssues.length > 0) {
+        report += `### ⚠️  Major Issues (${majorIssues.length})\n`;
+        majorIssues.forEach((issue: any) => {
+          report += `- **Line ${issue.line}:** ${issue.message} (${issue.rule})\n`;
+        });
+        report += `\n`;
+      }
+      
+      if (minorIssues.length > 0 && minorIssues.length <= 10) {
+        report += `### ℹ️  Minor Issues (${minorIssues.length})\n`;
+        minorIssues.forEach((issue: any) => {
+          report += `- **Line ${issue.line}:** ${issue.message} (${issue.rule})\n`;
+        });
+        report += `\n`;
+      } else if (minorIssues.length > 10) {
+        report += `### ℹ️  Minor Issues (${minorIssues.length} total, showing first 10)\n`;
+        minorIssues.slice(0, 10).forEach((issue: any) => {
+          report += `- **Line ${issue.line}:** ${issue.message} (${issue.rule})\n`;
+        });
+        report += `\n`;
+      }
+    }
+    
+    report += `### 🔗 Resources\n`;
+    report += `- [Drupal Coding Standards](https://www.drupal.org/docs/develop/standards)\n`;
+    report += `- [Drupal ${targetVersion} API](https://api.drupal.org/api/drupal/${targetVersion})\n`;
+    
+    return report;
+  }
+
+  private formatHybridResult(result: any, title: string): string {
+    let report = `## 🤖 Intelligent ${title}\n\n`;
+    
+    // Source information
+    const sourceIcons = {
+      'docs': '📚',
+      'live': '🚀', 
+      'hybrid': '🎆'
+    } as const;
+    
+    type SourceType = keyof typeof sourceIcons;
+    const sourceIcon: string = sourceIcons[result.source as SourceType] || '🔍';
+    
+    report += `**Source:** ${sourceIcon} ${result.source.toUpperCase()}\n`;
+    report += `**Execution Time:** ${result.context?.execution_time}ms\n`;
+    report += `**Live Connection:** ${result.context?.live_available ? '✅' : '❌'}\n\n`;
+    
+    // Documentation data
+    if (result.docs_data) {
+      report += `### 📚 Documentation Insights\n`;
+      
+      if (result.docs_data.module_info) {
+        report += `**Module:** ${result.docs_data.module_info.title}\n`;
+        report += `**Description:** ${result.docs_data.module_info.description}\n`;
+        report += `**Version:** ${result.docs_data.module_info.version}\n`;
+        report += `**Compatibility:** ${result.docs_data.module_info.compatible_with?.join(', ') || 'N/A'}\n\n`;
+      }
+      
+      if (result.docs_data.function_details) {
+        report += `**Function:** ${result.docs_data.function_details.name || 'Unknown'}\n`;
+        report += `**Description:** ${result.docs_data.function_details.description || 'No description'}\n\n`;
+      }
+      
+      if (result.docs_data.code_examples?.length > 0) {
+        report += `**Code Examples:** ${result.docs_data.code_examples.length} available\n\n`;
+      }
+    }
+    
+    // Live data
+    if (result.live_data) {
+      report += `### 🚀 Live Site Analysis\n`;
+      
+      if ('is_installed' in result.live_data) {
+        report += `**Installation Status:** ${result.live_data.is_installed ? '✅ Installed' : '❌ Not Installed'}\n`;
+      }
+      
+      if ('content_count' in result.live_data) {
+        report += `**Content Count:** ${result.live_data.content_count} items\n`;
+      }
+      
+      if (result.live_data.site_info) {
+        report += `**Drupal Version:** ${result.live_data.site_info.drupal_version || 'Unknown'}\n`;
+      }
+      
+      report += `\n`;
+    }
+    
+    // Recommendations
+    if (result.recommendations?.length > 0) {
+      report += `### 💡 Intelligent Recommendations\n`;
+      result.recommendations.forEach((rec: string) => {
+        report += `${rec}\n`;
+      });
+      report += `\n`;
+    }
+    
+    // Additional context
+    if (result.source === 'hybrid') {
+      report += `### 🎆 Hybrid Intelligence\n`;
+      report += `This analysis combines multiple data sources for comprehensive insights:\n`;
+      report += `- Official documentation and API references\n`;
+      report += `- Community examples and best practices\n`;
+      if (result.context?.live_available) {
+        report += `- Live site analysis and real-time status\n`;
+      }
+      report += `\nFor the most accurate recommendations, ensure your Drupal instance is connected.\n`;
+    }
+    
+    return report;
+  }
+
   async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error("Drupal MCP server running on stdio");
+    
+    const mode = this.modeManager.getCurrentMode();
+    const status = this.modeManager.getConnectionStatus();
+    
+    console.error(`🚀 Drupal MCP server running on stdio`);
+    console.error(`📊 Mode: ${mode.toUpperCase()}`);
+    console.error(`🔗 Live connection: ${status.isConnected ? 'ACTIVE' : 'INACTIVE'}`);
+    
+    if (status.isConnected && status.responseTime) {
+      console.error(`⚡ Response time: ${status.responseTime}ms`);
+    }
+  }
+  
+  async shutdown() {
+    console.error('🛑 Shutting down MCP server...');
+    this.modeManager.destroy();
+    console.error('✅ Server shutdown complete');
   }
 }
 

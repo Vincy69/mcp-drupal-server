@@ -1485,12 +1485,14 @@ export class DrupalDocsClient {
 
   // Get available Drupal versions
   getAvailableVersions(): DrupalVersion[] {
-    return ['7.x', '8.x', '9.x', '10.x', '11.x'];
+    // Fetch supported versions dynamically from API instead of hardcoding
+    throw new Error('Drupal versions must be fetched dynamically from API');
   }
 
   // Get available documentation types
   getAvailableDocTypes(): DocType[] {
-    return ['topics', 'classes', 'functions', 'constants', 'globals', 'files', 'namespaces', 'deprecated', 'services', 'elements'];
+    // Fetch search types dynamically from API instead of hardcoding
+    throw new Error('Search types must be fetched dynamically from API');
   }
 
   // Clear cache
