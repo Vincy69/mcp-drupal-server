@@ -4,362 +4,121 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
-The **Ultimate MCP Server for Drupal CMS** - Designed specifically for **Claude Code**, combining dynamic data aggregation, hybrid architecture, and intelligent analysis tools. This isn't just another MCP server; it's the professional solution for Drupal development with seamless Claude Code integration.
+**Le serveur MCP ultime pour le développement Drupal avec Claude Code.**
 
-## 🎯 Why MCP Drupal Server?
+Transforme Claude Code en expert Drupal avec 35+ outils spécialisés, accès en temps réel aux APIs officielles, génération de code intelligente et analyse avancée.
 
-- **🔥 Optimized for Claude Code** - Auto-detected, seamless integration in Drupal projects
-- **100% Dynamic Architecture** - No hardcoded data, everything from live APIs
-- **Hybrid Intelligence** - Seamlessly combines documentation with live Drupal instances
-- **Multi-Source Aggregation** - GitHub, Drupal.org, API docs, and your Drupal site
-- **Smart Fallback System** - Never fails, gracefully degrades when sources are unavailable
-- **Advanced Analysis Tools** - AI-powered code analyzer v2, module generator, standards checker
-- **AI Intelligence** - Fuzzy search with typo tolerance, migration assistant, quality scoring
-- **Blazing Fast Cache** - Intelligent caching with automatic invalidation
-
-## ✨ Features
-
-### 🔍 Core Search & Discovery
-- **Universal Search** - Search across all Drupal APIs, functions, hooks, and services
-- **Smart Module Discovery** - Find contrib modules with statistics and compatibility info
-- **Code Examples** - Real-world examples from GitHub, Drupal.org, and official docs
-- **Hook Documentation** - Complete hook reference with usage examples
-
-### 🛠️ Development Tools
-- **Code Analyzer v2** - AI-powered analysis with quality scoring (0-100), security audit, and refactoring suggestions
-- **Module Generator** - Generate complete module skeletons with 15+ file types
-- **Standards Checker** - Ensure your code follows Drupal coding standards
-- **Custom Entity Generator** - Create custom entities with all necessary files (15+ files per entity)
-- **Migration Assistant** - Analyze and automate Drupal version upgrades (8→9→10→11)
-
-### 🧠 Advanced Intelligence Features (v1.5.0)
-- **Deep Code Analysis** - Quality scoring, performance detection, security audit, refactoring suggestions
-- **Smart Fuzzy Search** - Typo tolerance, abbreviation expansion, synonym matching, "Did you mean..." suggestions
-- **Migration Intelligence** - Automated upgrade path analysis, patch generation, effort estimation
-- **Entity Generation** - Complete custom entity with forms, storage, REST API, Views integration
-
-### 🎭 Hybrid Mode Features
-- **4 Operational Modes**:
-  - `DOCS_ONLY` - Pure documentation mode (default)
-  - `LIVE_ONLY` - Connected to live Drupal instance only
-  - `HYBRID` - Best of both worlds
-  - `SMART_FALLBACK` - Intelligent mode switching
-- **Live Site Analysis** - Analyze modules, content types, and configurations
-- **Contextual Recommendations** - Get suggestions based on your actual setup
-
-## 🚀 Quick Start
-
-### Installation
-
-#### Option 1: Interactive Installation Wizard (Recommended)
-```bash
-# Clone the repository
-git clone https://github.com/Vincy69/mcp-drupal-server.git
-cd mcp-drupal-server
-
-# Run the installation wizard
-npm run install:wizard
-```
-
-The wizard will:
-- ✅ Check prerequisites (Node.js 18+, npm 8+)
-- ✅ Configure environment variables
-- ✅ Install dependencies and build
-- ✅ Set up Claude Code integration automatically
-- ✅ Create startup scripts
-
-#### Option 2: Manual Installation
-```bash
-# Clone the repository
-git clone https://github.com/Vincy69/mcp-drupal-server.git
-cd mcp-drupal-server
-
-# Install dependencies
-npm install
-
-# Copy environment template
-cp .env.example .env
-
-# Edit .env with your Drupal connection details
-# Build the project
-npm run build
-
-# Start the server
-npm start
-```
-
-### Claude Code Configuration
-
-**Primary Usage**: This MCP server is optimized for **Claude Code** - Anthropic's official CLI tool.
-
-#### Option 1: Auto-detected (Recommended)
-If you're using Claude Code in a Drupal project directory, the MCP server will be auto-detected and available immediately.
-
-#### Option 2: Manual Configuration
-Add to your Claude Code MCP configuration:
+## 🎯 Installation Rapide
 
 ```bash
-# Install and run in your Drupal project
-npm install -g mcp-drupal-server
-mcp-drupal-server
+# 1. Cloner et installer
+git clone <repository>
+cd "MCP Drupal"
+npm install && npm run build
+
+# 2. Configurer Claude Code  
+cp config/claude_mcp_config.json ~/.config/claude-code/mcp_config.json
+
+# 3. Redémarrer Claude Code
+# ✅ Tous les outils Drupal sont maintenant disponibles !
 ```
 
-#### Claude Desktop (Alternative)
-For Claude Desktop users, add to configuration file:
+## 📁 Structure du Projet
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "drupal": {
-      "command": "node",
-      "args": ["/path/to/mcp-drupal-server/dist/index.js"]
-    }
-  }
-}
+```
+MCP Drupal/
+├── 📚 docs/              # Documentation complète
+│   ├── development/      # Guides de développement
+│   ├── deployment/       # Installation et déploiement  
+│   ├── examples/         # Tutoriels et comparaisons
+│   └── api/             # Documentation API
+├── ⚙️ config/           # Configuration Claude Code
+├── 🔧 scripts/          # Scripts d'installation et maintenance
+├── 🧪 tests/            # Tests (actifs et désactivés)
+├── 💻 src/              # Code source TypeScript
+└── 📦 dist/             # Code compilé (serveur MCP)
 ```
 
-## 📖 Usage with Claude Code
+## 🎯 Fonctionnalités Principales
 
-### Getting Started
+### 🔍 Recherche et Découverte
+- **35+ Outils MCP** pour le développement Drupal
+- **Recherche universelle** dans toutes les APIs Drupal
+- **Exemples de code réels** depuis GitHub et Drupal.org
+- **Documentation dynamique** toujours à jour
 
-**Claude Code** automatically detects this MCP server in Drupal projects. Simply:
+### 🛠️ Génération et Analyse
+- **Générateur de modules** complets avec structure avancée
+- **Analyseur de code IA** avec scoring qualité (0-100)
+- **Vérificateur de standards** Drupal automatique
+- **Assistant de migration** entre versions Drupal
 
-1. Navigate to your Drupal project directory
-2. Run `claude` command
-3. Start asking Drupal questions!
-
-### Pro Tip: CLAUDE.md Integration
-
-For enhanced experience, create a `CLAUDE.md` file in your Drupal project root:
-
-```markdown
-# 🚀 Drupal Development with MCP Drupal Server
-
-You have access to the **MCP Drupal Server** - the ultimate Drupal development assistant.
-
-## 🛠️ Essential Tools
-
-### Search & Discovery
-- `search_drupal_all` - Universal search (start here!)
-- `search_drupal_functions` - Find specific functions
-- `search_drupal_hooks` - Discover hooks
-- `search_drupal_services` - Service container
-- `search_contrib_modules` - Community modules
-- `search_code_examples` - Real-world code
-
-### Code Analysis & Generation
-- `analyze_drupal_file` - Comprehensive file analysis
-- `check_drupal_standards` - Coding standards check
-- `generate_module_skeleton` - Create module structure
-- `generate_custom_entity` - Complete entity generation (15+ files)
-
-### 🧠 Advanced Intelligence (v1.5.0)
-- `deep_analyze_file` - AI analysis with quality score (0-100)
-- `smart_search` - Fuzzy search with typo tolerance
-- `analyze_upgrade_path` - Migration analysis (D8→D9→D10→D11)
-- `generate_migration_patches` - Automated migration fixes
-- `generate_migration_report` - HTML migration reports
-
-### Hybrid Features (if connected to live site)
-- `hybrid_analyze_module` - Module + installation status
-- `hybrid_analyze_site` - Full site recommendations
-- `get_mode_status` - Check connection status
-
-## 💡 Example Workflows
-
-### Starting Any Task:
-1. search_drupal_all("your topic")
-2. search_code_examples("implementation")
-3. search_contrib_modules("functionality")
-4. Generate or analyze code
-
-### Advanced Analysis:
-1. deep_analyze_file("my_module.module")
-2. Review quality score and security issues
-3. Apply refactoring suggestions
-
-### Migration Planning:
-1. analyze_upgrade_path("./project", "9", "10")
-2. generate_migration_patches(report)
-3. Review HTML report
-
-## ✅ Best Practices
-- Always search before implementing
-- Check for contrib modules first
-- Use deep_analyze_file for quality assurance
-- Let smart_search correct your typos
-
-**Claude Code Integration**: When working on Drupal projects, Claude Code automatically uses these tools rather than general knowledge, providing you with real-time, accurate Drupal development assistance.
-```
-
-### Example Claude Code Conversations
-
-```bash
-# In your Drupal project directory with Claude Code:
-$ claude "Find all hooks related to user authentication"
-$ claude "Generate a custom module for managing events" 
-$ claude "Analyze my custom module for security issues"
-$ claude "What contrib modules can help with SEO?"
-$ claude "Show me examples of creating custom entities"
-
-# Claude Code automatically uses MCP Drupal Server for accurate responses!
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# Mode Configuration (optional)
-DOCS_ONLY_MODE=true          # Force documentation mode
-FORCE_LIVE_MODE=true         # Force live mode
-FORCE_HYBRID_MODE=true       # Force hybrid mode
-
-# Drupal Connection (for hybrid features)
-DRUPAL_BASE_URL=https://example.com
-DRUPAL_USERNAME=admin
-DRUPAL_PASSWORD=password
-# OR use token/API key
-DRUPAL_TOKEN=your_oauth_token
-DRUPAL_API_KEY=your_api_key
-
-# Performance Tuning
-CACHE_TIMEOUT=900000         # Cache timeout in ms (default: 15 min)
-API_TIMEOUT=45000           # API timeout in ms (default: 45 sec)
-MAX_RETRIES=3               # Maximum retry attempts
-```
-
-## 📊 Available Tools
-
-### Search Tools
-| Tool | Description | Mode |
-|------|-------------|------|
-| `search_drupal_all` | Universal search across all Drupal APIs | Docs |
-| `search_drupal_functions` | Search for specific functions | Docs |
-| `search_drupal_hooks` | Find hooks and implementations | Docs |
-| `search_drupal_services` | Discover services and containers | Docs |
-| `search_drupal_classes` | Search PHP classes and interfaces | Docs |
-| `search_contrib_modules` | Find contributed modules | Docs |
-| `search_code_examples` | Get implementation examples | Dynamic |
-
-### Analysis Tools
-| Tool | Description | Mode |
-|------|-------------|------|
-| `analyze_drupal_file` | Analyze PHP file structure | Local |
-| `check_drupal_standards` | Check coding standards | Local |
-| `generate_module_skeleton` | Create module structure | Local |
-| `generate_custom_entity` | Generate complete custom entities | Local |
-
-### Advanced Intelligence Tools (v1.5.0)
-| Tool | Description | Mode |
-|------|-------------|------|
-| `deep_analyze_file` | Advanced code analysis with quality scoring | Local |
-| `smart_search` | Fuzzy search with typo tolerance | Local |
-| `analyze_upgrade_path` | Drupal version migration analysis | Local |
-| `generate_migration_patches` | Generate automated migration patches | Local |
-| `generate_migration_report` | Create HTML migration reports | Local |
-
-### Hybrid Tools
-| Tool | Description | Mode |
-|------|-------------|------|
-| `hybrid_analyze_module` | Analyze module with live data | Hybrid |
-| `hybrid_analyze_function` | Function usage analysis | Hybrid |
-| `hybrid_analyze_site` | Full site analysis | Hybrid |
-| `hybrid_analyze_content_type` | Content type analysis | Hybrid |
-| `get_mode_status` | Check server mode status | System |
+### 🧠 Intelligence Avancée  
+- **Recherche floue** avec tolérance aux erreurs de frappe
+- **Suggestions contextuelles** basées sur votre projet
+- **4 modes opérationnels** : DOCS_ONLY, HYBRID, LIVE_ONLY, SMART_FALLBACK
+- **Cache intelligent** avec invalidation automatique
 
 ## 📚 Documentation
 
-- **[ECOSYSTEM_SETUP.md](ECOSYSTEM_SETUP.md)** - 🚀 Quick 5-minute setup guide
-- **[MCP_ECOSYSTEM.md](MCP_ECOSYSTEM.md)** - Complete MCP ecosystem guide for Drupal development
-- **[CLAUDE.md](CLAUDE.md)** - Usage guide for Claude Code
-- **[API.md](API.md)** - Complete API reference with examples
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+| Section | Description |
+|---------|-------------|
+| 🚀 **[Installation](docs/deployment/INSTALLATION.md)** | Guide d'installation détaillé |
+| 📖 **[Tutoriels](docs/examples/TUTORIALS.md)** | Tutoriels step-by-step |
+| 🔌 **[API Reference](docs/api/API.md)** | Documentation complète des 35+ outils |
+| 📊 **[Comparaisons](docs/examples/EXAMPLES_COMPARISON.md)** | Avant/après Claude Code vanilla |
+| 🏗️ **[Écosystème MCP](docs/deployment/MCP_ECOSYSTEM.md)** | Configuration multi-serveurs |
 
-## 🏗️ Architecture
+## 🎯 Cas d'Usage
 
-### Dynamic Data Sources
-- **GitHub API** - Real code examples from Drupal repos
-- **Drupal.org API** - Modules, themes, documentation
-- **API.Drupal.org** - Official API documentation
-- **Live Drupal Instance** - Your actual site data (optional)
-
-### Intelligent Caching
-- Multi-level cache with TTL management
-- Automatic invalidation on errors
-- Configurable timeout periods
-- Memory-efficient storage
-
-### Robust Error Handling
-- Retry logic with exponential backoff
-- Graceful degradation
-- Detailed error logging
-- No silent failures
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Development Setup
-
+### Pour les Développeurs Drupal
 ```bash
-# Install dev dependencies
-npm install
+# Recherche universelle
+search_drupal_all("custom forms")
 
-# Run in development mode
-npm run dev
+# Génération de module
+generate_module_skeleton("my_module", "My Custom Module")
 
-# Run tests
-npm test
-
-# Lint code
-npm run lint
-
-# Type check
-npm run type-check
-
-# Test MCP ecosystem compatibility
-./test_mcp_ecosystem.js
-
-# Install additional MCP servers
-./install_mcp_ecosystem.sh
-
-# Run with Docker
-docker build -t mcp-drupal-server .
-docker run -it mcp-drupal-server
+# Analyse de code
+analyze_drupal_file("path/to/file.php")
 ```
 
-### CI/CD
+### Pour les Architectes
+```bash
+# Modules contrib populaires
+search_contrib_modules("workflow", ["11.x"])
 
-The project includes GitHub Actions workflows for:
-- ✅ Automated testing (Node.js 18, 20)
-- ✅ Security scanning (npm audit, Snyk)
-- ✅ Code quality checks (ESLint, TypeScript)
-- ✅ Automated releases (semantic-release)
-- ✅ Docker builds
-- ✅ Documentation generation
+# Génération d'entités complètes
+generate_custom_entity(entity_config)
 
-## 📄 License
+# Analyse de migration
+analyze_upgrade_path("./project", "10", "11")
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 🚀 Écosystème Complet
 
-## 🙏 Acknowledgments
+Le serveur MCP Drupal fonctionne encore mieux avec l'écosystème complet :
 
-- Drupal Community for the amazing CMS
-- Anthropic for the MCP protocol
-- All contributors and testers
+```bash
+# Installation automatique de tous les serveurs MCP
+bash scripts/ecosystem/install_mcp_ecosystem.sh
+```
 
-## 📞 Support
+**Serveurs MCP inclus :**
+- **Filesystem** - Gestion de fichiers
+- **Git** - Contrôle de version
+- **Database** - Accès aux bases de données
+- **Docker** - Containerisation
+- **GitHub** - Intégration repository
 
-- 🐛 [Report Issues](https://github.com/Vincy69/mcp-drupal-server/issues)
-- 💬 [Discussions](https://github.com/Vincy69/mcp-drupal-server/discussions)
-- 📧 Contact: Via GitHub Issues
+## 🤝 Contribution
+
+Consultez [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md) pour contribuer au projet.
+
+## 📄 Licence
+
+MIT License - voir [LICENSE](LICENSE) pour les détails.
 
 ---
 
-**Made with ❤️ for the Drupal Community**
-
-*"Not just a tool, it's God Mode for Drupal development"*
+⭐ **Star le projet** si vous trouvez ce serveur MCP utile pour votre développement Drupal !

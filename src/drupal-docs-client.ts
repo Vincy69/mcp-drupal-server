@@ -65,10 +65,36 @@ interface SearchResult {
   deprecated?: boolean;
 }
 
+// Performance cache configuration
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+  hitCount: number;
+  size: number;
+}
+
+interface PerformanceMetrics {
+  totalRequests: number;
+  cacheHits: number;
+  cacheMisses: number;
+  avgResponseTime: number;
+  errorCount: number;
+}
+
 export class DrupalDocsClient {
   private client: AxiosInstance;
-  private cache = new Map<string, any>();
-  private cacheTimeout = 30 * 60 * 1000; // 30 minutes
+  private cache = new Map<string, CacheEntry>();
+  private cacheTimeout = 15 * 60 * 1000; // Reduced to 15 minutes for better freshness
+  private maxCacheSize = 500; // Maximum number of cache entries
+  private maxCacheMemory = 50 * 1024 * 1024; // 50MB max cache memory
+  private performanceMetrics: PerformanceMetrics = {
+    totalRequests: 0,
+    cacheHits: 0,
+    cacheMisses: 0,
+    avgResponseTime: 0,
+    errorCount: 0
+  };
+  private requestQueue = new Map<string, Promise<any>>(); // Deduplicate concurrent requests
 
   constructor() {
     this.client = axios.create({
@@ -76,39 +102,163 @@ export class DrupalDocsClient {
       headers: {
         'User-Agent': 'MCP-Drupal-Server/1.0.0',
         'Accept': 'text/html,application/json',
+        'Accept-Encoding': 'gzip, deflate', // Enable compression
       },
-      timeout: 10000,
+      timeout: 15000, // Increased timeout for better reliability
+      maxRedirects: 3,
+      validateStatus: (status) => status < 500, // Accept 4xx errors to cache them
     });
+    
+    // Setup periodic cache cleanup
+    setInterval(() => this.cleanupCache(), 5 * 60 * 1000); // Every 5 minutes
   }
 
   private getCacheKey(type: DocType, version: DrupalVersion, query?: string): string {
-    return `${type}-${version}-${query || 'all'}`;
+    // Create normalized cache key with hash for long queries
+    const baseKey = `${type}-${version}`;
+    if (!query) return `${baseKey}-all`;
+    
+    // Hash long queries to prevent excessive memory usage
+    if (query.length > 50) {
+      const hash = this.simpleHash(query);
+      return `${baseKey}-hash-${hash}`;
+    }
+    
+    return `${baseKey}-${query.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+  }
+
+  private simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
   }
 
   private isCacheValid(timestamp: number): boolean {
     return Date.now() - timestamp < this.cacheTimeout;
   }
 
+  private estimateSize(data: any): number {
+    // Rough estimate of object size in bytes
+    return JSON.stringify(data).length * 2; // UTF-16 encoding
+  }
+
+  private cleanupCache(): void {
+    const now = Date.now();
+    let totalSize = 0;
+    const entries: Array<[string, CacheEntry]> = [];
+    
+    // Calculate total size and collect entries
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.cacheTimeout) {
+        this.cache.delete(key); // Remove expired entries
+      } else {
+        totalSize += entry.size;
+        entries.push([key, entry]);
+      }
+    }
+    
+    // If over memory limit, remove least recently used entries
+    if (totalSize > this.maxCacheMemory) {
+      entries.sort((a, b) => a[1].hitCount - b[1].hitCount); // Sort by hit count (LRU)
+      
+      while (totalSize > this.maxCacheMemory * 0.8 && entries.length > 0) {
+        const [key, entry] = entries.shift()!;
+        this.cache.delete(key);
+        totalSize -= entry.size;
+      }
+    }
+    
+    // Ensure we don't exceed max entry count
+    if (this.cache.size > this.maxCacheSize) {
+      const sortedEntries = Array.from(this.cache.entries())
+        .sort((a, b) => a[1].hitCount - b[1].hitCount);
+      
+      const toRemove = sortedEntries.slice(0, this.cache.size - this.maxCacheSize);
+      for (const [key] of toRemove) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
   private async fetchAndParse(url: string): Promise<any> {
-    const cacheKey = url;
+    const startTime = Date.now();
+    this.performanceMetrics.totalRequests++;
+    
+    const cacheKey = this.simpleHash(url);
     const cached = this.cache.get(cacheKey);
     
     if (cached && this.isCacheValid(cached.timestamp)) {
+      cached.hitCount++;
+      this.performanceMetrics.cacheHits++;
       return cached.data;
     }
-
+    
+    // Check if request is already in progress to avoid duplicate requests
+    if (this.requestQueue.has(url)) {
+      return this.requestQueue.get(url)!;
+    }
+    
+    const requestPromise = this.performFetch(url, cacheKey, startTime);
+    this.requestQueue.set(url, requestPromise);
+    
+    try {
+      const result = await requestPromise;
+      return result;
+    } finally {
+      this.requestQueue.delete(url);
+    }
+  }
+  
+  private async performFetch(url: string, cacheKey: string, startTime: number): Promise<any> {
     try {
       const response = await this.client.get(url);
       const data = this.parseHTMLContent(response.data);
       
-      this.cache.set(cacheKey, {
+      const responseTime = Date.now() - startTime;
+      this.updatePerformanceMetrics(responseTime, false);
+      
+      const size = this.estimateSize(data);
+      const cacheEntry: CacheEntry = {
         data,
         timestamp: Date.now(),
-      });
+        hitCount: 1,
+        size
+      };
+      
+      this.cache.set(cacheKey, cacheEntry);
+      this.performanceMetrics.cacheMisses++;
       
       return data;
     } catch (error) {
+      const responseTime = Date.now() - startTime;
+      this.updatePerformanceMetrics(responseTime, true);
+      this.performanceMetrics.errorCount++;
+      
+      // Cache empty results for failed requests (with shorter TTL)
+      if (error instanceof Error && error.message.includes('404')) {
+        const cacheEntry: CacheEntry = {
+          data: [],
+          timestamp: Date.now(),
+          hitCount: 1,
+          size: 100 // Small size for empty results
+        };
+        this.cache.set(cacheKey, cacheEntry);
+        return [];
+      }
+      
       throw new Error(`Failed to fetch documentation: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  
+  private updatePerformanceMetrics(responseTime: number, isError: boolean): void {
+    if (!isError) {
+      this.performanceMetrics.avgResponseTime = 
+        (this.performanceMetrics.avgResponseTime * (this.performanceMetrics.totalRequests - 1) + responseTime) / 
+        this.performanceMetrics.totalRequests;
     }
   }
 
@@ -170,69 +320,138 @@ export class DrupalDocsClient {
     return results;
   }
 
-  // Enhanced function search with comprehensive coverage including deprecated functions
+  // Enhanced function search with performance optimizations
   async searchFunctions(version: DrupalVersion = '11.x', query?: string): Promise<DrupalAPIFunction[]> {
+    const cacheKey = this.getCacheKey('functions', version, query);
+    const cached = this.cache.get(cacheKey);
+    
+    if (cached && this.isCacheValid(cached.timestamp)) {
+      cached.hitCount++;
+      return cached.data;
+    }
+    
     try {
-      console.error(`Drupal API: Starting comprehensive function search for version ${version}`);
+      console.error(`Drupal API: Starting optimized function search for version ${version}`);
       
-      // Strategy 1: Get core functions from main API
-      const coreFunctions = await this.getCoreAPIFunctions(version);
-      
-      // Strategy 2: Get deprecated functions with warnings
-      const deprecatedFunctions = await this.getDeprecatedFunctions(version);
-      
-      // Strategy 3: Get functions from specific core modules
-      const moduleSpecificFunctions = await this.getCoreModuleFunctions(version);
-      
-      // Strategy 4: Get utility and helper functions
-      const utilityFunctions = await this.getUtilityFunctions(version);
-      
-      // Combine all function sources
-      const allFunctions = [
-        ...coreFunctions,
-        ...deprecatedFunctions,
-        ...moduleSpecificFunctions,
-        ...utilityFunctions
-      ];
-      
-      // Deduplicate and enhance functions
-      const uniqueFunctions = this.deduplicateFunctions(allFunctions);
-      const enhancedFunctions = uniqueFunctions.map(func => this.enhanceFunctionData(func, version));
-      
-      console.error(`Drupal API: Found ${enhancedFunctions.length} total functions from all sources`);
+      // Optimized strategy: Prioritize based on query specificity
+      let allFunctions: DrupalAPIFunction[] = [];
       
       if (query && query.trim()) {
-        const filtered = this.filterFunctions(enhancedFunctions, query);
-        console.error(`Drupal API: Filtered to ${filtered.length} functions with query "${query}"`);
-        return filtered.slice(0, 200); // Reasonable limit for query results
+        // For specific queries, use targeted search to reduce API calls
+        allFunctions = await this.getTargetedFunctions(version, query);
+      } else {
+        // For general search, use parallel requests for better performance
+        const [coreFunctions, deprecatedFunctions] = await Promise.all([
+          this.getCoreAPIFunctions(version, 10), // Limit pages for better performance
+          this.getDeprecatedFunctions(version)
+        ]);
+        
+        allFunctions = [...coreFunctions, ...deprecatedFunctions];
       }
       
-      return enhancedFunctions.slice(0, 500); // Higher limit for comprehensive results
+      // Optimize deduplication and enhancement
+      const uniqueFunctions = this.deduplicateFunctions(allFunctions);
+      const enhancedFunctions = this.batchEnhanceFunctions(uniqueFunctions, version);
+      
+      console.error(`Drupal API: Found ${enhancedFunctions.length} total functions (optimized)`);
+      
+      let results = enhancedFunctions;
+      if (query && query.trim()) {
+        results = this.filterFunctions(enhancedFunctions, query).slice(0, 200);
+        console.error(`Drupal API: Filtered to ${results.length} functions with query "${query}"`);
+      } else {
+        results = results.slice(0, 300); // Reduced default limit
+      }
+      
+      // Cache results
+      const size = this.estimateSize(results);
+      this.cache.set(cacheKey, {
+        data: results,
+        timestamp: Date.now(),
+        hitCount: 1,
+        size
+      });
+      
+      return results;
     } catch (error) {
       console.error(`Error searching functions: ${error instanceof Error ? error.message : String(error)}`);
       console.log('Falling back to mock data...');
       return this.getMockFunctions(query);
     }
   }
+  
+  // Targeted function search for specific queries
+  private async getTargetedFunctions(version: DrupalVersion, query: string): Promise<DrupalAPIFunction[]> {
+    // Analyze query to determine best search strategy
+    const queryLower = query.toLowerCase();
+    const strategies: Array<() => Promise<DrupalAPIFunction[]>> = [];
+    
+    // Strategy 1: Core functions (always include)
+    strategies.push(() => this.getCoreAPIFunctions(version, 5));
+    
+    // Strategy 2: Module-specific if query suggests it
+    if (queryLower.includes('node') || queryLower.includes('user') || queryLower.includes('field')) {
+      strategies.push(() => this.getCoreModuleFunctions(version));
+    }
+    
+    // Strategy 3: Deprecated if query suggests it
+    if (queryLower.includes('deprecated') || queryLower.includes('old') || queryLower.includes('legacy')) {
+      strategies.push(() => this.getDeprecatedFunctions(version));
+    }
+    
+    // Execute strategies in parallel
+    const results = await Promise.all(strategies.map(strategy => 
+      strategy().catch(() => []) // Don't fail on individual strategy errors
+    ));
+    
+    return results.flat();
+  }
+  
+  // Batch enhancement of functions for better performance
+  private batchEnhanceFunctions(functions: DrupalAPIFunction[], version: DrupalVersion): DrupalAPIFunction[] {
+    const batchSize = 50; // Process in batches
+    const enhanced: DrupalAPIFunction[] = [];
+    
+    for (let i = 0; i < functions.length; i += batchSize) {
+      const batch = functions.slice(i, i + batchSize);
+      const enhancedBatch = batch.map(func => this.enhanceFunctionData(func, version));
+      enhanced.push(...enhancedBatch);
+    }
+    
+    return enhanced;
+  }
 
-  // Strategy 1: Get core API functions with extended pagination
-  private async getCoreAPIFunctions(version: DrupalVersion): Promise<DrupalAPIFunction[]> {
+  // Strategy 1: Get core API functions with optimized pagination
+  private async getCoreAPIFunctions(version: DrupalVersion, maxPages: number = 15): Promise<DrupalAPIFunction[]> {
     try {
       const url = `/api/drupal/functions/${version}`;
-      const promises = [];
+      const functions: DrupalAPIFunction[] = [];
       
-      // Fetch first 20 pages for comprehensive coverage
-      for (let page = 0; page < 20; page++) {
-        promises.push(
-          this.fetchAndParse(page === 0 ? url : `${url}?page=${page}`)
-            .catch(() => [])
-        );
+      // Optimized: Fetch pages sequentially with early termination on empty results
+      for (let page = 0; page < maxPages; page++) {
+        try {
+          const pageUrl = page === 0 ? url : `${url}?page=${page}`;
+          const pageResults = await this.fetchAndParse(pageUrl);
+          
+          if (pageResults.length === 0) {
+            console.error(`Strategy 1: No more results at page ${page}, stopping`);
+            break; // No more results, stop fetching
+          }
+          
+          functions.push(...pageResults);
+          
+          // Early termination if we have enough results for most queries
+          if (functions.length > 1000) {
+            console.error(`Strategy 1: Reached 1000 functions, stopping for performance`);
+            break;
+          }
+        } catch (pageError) {
+          console.error(`Strategy 1: Error fetching page ${page}, continuing...`);
+          // Continue with next page
+        }
       }
       
-      const results = await Promise.all(promises);
-      const functions = results.flat();
-      
-      console.error(`Strategy 1: Found ${functions.length} core API functions`);
+      console.error(`Strategy 1: Found ${functions.length} core API functions (optimized)`);
       return functions;
     } catch (error) {
       console.error(`Error in getCoreAPIFunctions: ${error}`);
@@ -1215,7 +1434,9 @@ export class DrupalDocsClient {
       // Cache the result (including null results to prevent repeated failed searches)
       this.cache.set(cacheKey, {
         data: found,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        hitCount: 1,
+        size: found ? this.estimateSize(found) : 100
       });
       
       if (found) {
@@ -1504,12 +1725,94 @@ export class DrupalDocsClient {
     this.cache.clear();
   }
 
-  // Get cache stats
-  getCacheStats(): { size: number; entries: string[] } {
+  // Get comprehensive cache and performance stats
+  getCacheStats(): { 
+    size: number; 
+    entries: string[]; 
+    memoryUsage: number;
+    performance: PerformanceMetrics;
+    hitRatio: number;
+    topHits: Array<{key: string; hits: number}>;
+  } {
+    let totalMemory = 0;
+    const hitCounts: Array<{key: string; hits: number}> = [];
+    
+    for (const [key, entry] of this.cache.entries()) {
+      totalMemory += entry.size;
+      hitCounts.push({key: key.substring(0, 50) + '...', hits: entry.hitCount});
+    }
+    
+    const hitRatio = this.performanceMetrics.totalRequests > 0 
+      ? (this.performanceMetrics.cacheHits / this.performanceMetrics.totalRequests) * 100 
+      : 0;
+    
     return {
       size: this.cache.size,
-      entries: Array.from(this.cache.keys()),
+      entries: Array.from(this.cache.keys()).map(k => k.substring(0, 50) + '...'),
+      memoryUsage: Math.round(totalMemory / 1024 / 1024 * 100) / 100, // MB
+      performance: { ...this.performanceMetrics },
+      hitRatio: Math.round(hitRatio * 100) / 100,
+      topHits: hitCounts.sort((a, b) => b.hits - a.hits).slice(0, 10)
     };
+  }
+
+  // Get performance recommendations based on usage patterns
+  getPerformanceRecommendations(): string[] {
+    const stats = this.getCacheStats();
+    const recommendations: string[] = [];
+    
+    if (stats.hitRatio < 60) {
+      recommendations.push('Cache hit ratio is low (<60%). Consider increasing cache timeout or reviewing query patterns.');
+    }
+    
+    if (stats.memoryUsage > 40) {
+      recommendations.push('Cache memory usage is high (>40MB). Consider reducing maxCacheMemory or cleaning up more frequently.');
+    }
+    
+    if (this.performanceMetrics.avgResponseTime > 2000) {
+      recommendations.push('Average response time is high (>2s). Consider optimizing queries or using more targeted searches.');
+    }
+    
+    if (this.performanceMetrics.errorCount > this.performanceMetrics.totalRequests * 0.1) {
+      recommendations.push('Error rate is high (>10%). Check network connectivity or API availability.');
+    }
+    
+    if (stats.size > this.maxCacheSize * 0.9) {
+      recommendations.push('Cache is near capacity. Consider increasing maxCacheSize or implementing better eviction policies.');
+    }
+    
+    return recommendations;
+  }
+
+  // Warm up cache with commonly used queries
+  async warmupCache(version: DrupalVersion = '11.x'): Promise<void> {
+    const commonQueries = [
+      { type: 'functions' as DocType, query: 'node' },
+      { type: 'functions' as DocType, query: 'user' },
+      { type: 'functions' as DocType, query: 'form' },
+      { type: 'hooks' as DocType, query: 'alter' },
+      { type: 'classes' as DocType, query: 'Entity' },
+    ];
+    
+    console.error('Starting cache warmup...');
+    
+    const warmupPromises = commonQueries.map(async ({ type, query }) => {
+      try {
+        switch (type) {
+          case 'functions':
+            await this.searchFunctions(version, query);
+            break;
+          case 'classes':
+            await this.searchClasses(version, query);
+            break;
+        }
+      } catch (error) {
+        console.error(`Warmup failed for ${type}:${query}:`, error);
+      }
+    });
+    
+    await Promise.all(warmupPromises);
+    console.error(`Cache warmup completed. Cache size: ${this.cache.size}`);
   }
 
   // Mock data fallback methods

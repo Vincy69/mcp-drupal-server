@@ -9,26 +9,26 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-const CLAUDE_CONFIG_PATH = path.join(os.homedir(), 'Library/Application Support/Claude/claude_desktop_config.json');
+const CLAUDE_DESKTOP_CONFIG_PATH = path.join(os.homedir(), 'Library/Application Support/Claude/claude_desktop_config.json');
+const CLAUDE_CODE_CONFIG_PATH = path.join(os.homedir(), '.config/claude-code/mcp_config.json');
 const PROJECT_PATH = process.cwd();
 
-async function readConfig() {
+async function readConfig(configPath) {
   try {
-    const content = await fs.readFile(CLAUDE_CONFIG_PATH, 'utf8');
+    const content = await fs.readFile(configPath, 'utf8');
     return JSON.parse(content);
   } catch (error) {
-    console.error('❌ Impossible de lire la configuration Claude Desktop');
-    console.error(`   Chemin: ${CLAUDE_CONFIG_PATH}`);
+    console.error(`❌ Impossible de lire la configuration: ${configPath}`);
     throw error;
   }
 }
 
-async function writeConfig(config) {
+async function writeConfig(config, configPath, label) {
   try {
-    await fs.writeFile(CLAUDE_CONFIG_PATH, JSON.stringify(config, null, 2));
-    console.log('✅ Configuration Claude Desktop mise à jour');
+    await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+    console.log(`✅ Configuration ${label} mise à jour`);
   } catch (error) {
-    console.error('❌ Impossible d\'écrire la configuration Claude Desktop');
+    console.error(`❌ Impossible d'écrire la configuration ${label}`);
     throw error;
   }
 }
@@ -39,6 +39,22 @@ function createDocsConfig() {
     args: [path.join(PROJECT_PATH, "dist/index.js")],
     env: {
       DOCS_ONLY_MODE: "true"
+    }
+  };
+}
+
+function createClaudeCodeConfig(serverConfig) {
+  return {
+    mcp: {
+      drupal: serverConfig
+    }
+  };
+}
+
+function createClaudeDesktopConfig(serverConfig) {
+  return {
+    mcpServers: {
+      drupal: serverConfig
     }
   };
 }
@@ -70,65 +86,63 @@ function createFullConfig(options = {}) {
 async function configure(mode, options = {}) {
   console.log(`🔧 Configuration du serveur MCP Drupal en mode: ${mode}\n`);
 
-  const config = await readConfig();
-  
-  if (!config.mcpServers) {
-    config.mcpServers = {};
-  }
-
+  let serverConfig;
   switch (mode) {
     case 'docs':
-      config.mcpServers['drupal-docs'] = createDocsConfig();
-      // Supprimer l'ancienne config si elle existe
-      delete config.mcpServers['drupal'];
-      delete config.mcpServers['drupal-full'];
+      serverConfig = createDocsConfig();
       console.log('📚 Configuration documentation seule activée');
       break;
-
     case 'full':
-      config.mcpServers['drupal-full'] = createFullConfig(options);
-      // Supprimer l'ancienne config si elle existe
-      delete config.mcpServers['drupal'];
-      delete config.mcpServers['drupal-docs'];
+      serverConfig = createFullConfig(options);
       console.log('🚀 Configuration complète activée');
       console.log('⚠️  N\'oubliez pas de mettre à jour les credentials Drupal dans la configuration');
       break;
-
-    case 'both':
-      config.mcpServers['drupal-docs'] = createDocsConfig();
-      config.mcpServers['drupal-full'] = createFullConfig(options);
-      delete config.mcpServers['drupal'];
-      console.log('🔄 Les deux configurations sont disponibles');
-      break;
-
     default:
-      console.error('❌ Mode invalide. Utilisez: docs, full, ou both');
+      console.error('❌ Mode invalide. Utilisez: docs ou full');
       process.exit(1);
   }
 
-  await writeConfig(config);
+  // Configurer Claude Code
+  try {
+    await fs.mkdir(path.dirname(CLAUDE_CODE_CONFIG_PATH), { recursive: true });
+    const claudeCodeConfig = createClaudeCodeConfig(serverConfig);
+    await writeConfig(claudeCodeConfig, CLAUDE_CODE_CONFIG_PATH, 'Claude Code');
+  } catch (error) {
+    console.error('⚠️  Impossible de configurer Claude Code:', error.message);
+  }
 
-  console.log('\n📋 Configurations MCP Drupal actives:');
-  Object.keys(config.mcpServers)
-    .filter(key => key.startsWith('drupal'))
-    .forEach(key => {
-      const mode = config.mcpServers[key].env.DOCS_ONLY_MODE ? 'docs' : 'full';
-      console.log(`   - ${key}: mode ${mode}`);
-    });
+  // Configurer Claude Desktop (pour compatibilité)
+  try {
+    await fs.mkdir(path.dirname(CLAUDE_DESKTOP_CONFIG_PATH), { recursive: true });
+    let desktopConfig;
+    try {
+      desktopConfig = await readConfig(CLAUDE_DESKTOP_CONFIG_PATH);
+    } catch {
+      desktopConfig = {};
+    }
+    
+    if (!desktopConfig.mcpServers) {
+      desktopConfig.mcpServers = {};
+    }
+    
+    desktopConfig.mcpServers['drupal'] = serverConfig;
+    await writeConfig(desktopConfig, CLAUDE_DESKTOP_CONFIG_PATH, 'Claude Desktop');
+  } catch (error) {
+    console.error('⚠️  Impossible de configurer Claude Desktop:', error.message);
+  }
 
-  console.log('\n💡 Redémarrez Claude Desktop pour appliquer les changements');
+  console.log('\n💡 Redémarrez Claude Code pour appliquer les changements');
 }
 
 // Parse des arguments de ligne de commande
 const args = process.argv.slice(2);
 const mode = args[0];
 
-if (!mode || !['docs', 'full', 'both'].includes(mode)) {
-  console.log('Usage: node scripts/configure-claude.js [docs|full|both] [options]');
+if (!mode || !['docs', 'full'].includes(mode)) {
+  console.log('Usage: node scripts/configure-claude.js [docs|full] [options]');
   console.log('\nModes:');
   console.log('  docs  - Documentation seulement');
   console.log('  full  - Connexion Drupal complète');
-  console.log('  both  - Les deux configurations');
   console.log('\nOptions pour le mode full:');
   console.log('  --base-url URL     URL de base Drupal');
   console.log('  --username USER    Nom d\'utilisateur');

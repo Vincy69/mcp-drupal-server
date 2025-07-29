@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "drupal": {
+      "command": "node",
+      "args": ["{{PROJECT_PATH}}/dist/index.js"],
+      "env": {
+        "DOCS_ONLY_MODE": "false",
+        "CACHE_TIMEOUT": "900000",
+        "API_TIMEOUT": "45000",
+        "MAX_RETRIES": "3"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "{{PROJECT_PATH}}"]
+    },
+    "git": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-git", "--repository", "{{PROJECT_PATH}}"]
+    }
+  }
+}

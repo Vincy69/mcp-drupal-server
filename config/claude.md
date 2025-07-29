@@ -204,7 +204,7 @@ cp claude_mcp_config.json ~/.config/claude-code/mcp_config.json
 - **Composer** - PHP dependency management
 - **Docker** - Container environment control
 
-See **[MCP_ECOSYSTEM.md](MCP_ECOSYSTEM.md)** for complete setup and usage instructions.
+See **[MCP_ECOSYSTEM.md](../docs/deployment/MCP_ECOSYSTEM.md)** for complete setup and usage instructions.
 
 ---
 
