@@ -16,7 +16,7 @@
   "replacementPatterns": [
     {
       "pattern": "^/",
-      "replacement": "https://github.com/yourusername/mcp-drupal-god-mod/blob/main/"
+      "replacement": "https://github.com/vincenttournaud/mcp-drupal-server/blob/main/"
     }
   ],
   "httpHeaders": [

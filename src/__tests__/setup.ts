@@ -93,9 +93,7 @@ export const createMockDrupalHook = (overrides = {}) => ({
   name: 'hook_test',
   description: 'A test hook',
   signature: 'hook_test($param)',
-  parameters: [
-    { name: '$param', type: 'array', description: 'Hook parameter' },
-  ],
+  parameters: [{ name: '$param', type: 'array', description: 'Hook parameter' }],
   return: { type: 'void' },
   group: 'test',
   file: 'test.api.php',
@@ -105,7 +103,7 @@ export const createMockDrupalHook = (overrides = {}) => ({
 // Environment setup helpers
 export const setupTestEnvironment = (overrides = {}) => {
   const originalEnv = process.env;
-  
+
   beforeEach(() => {
     process.env = {
       ...originalEnv,
@@ -118,7 +116,7 @@ export const setupTestEnvironment = (overrides = {}) => {
       ...overrides,
     };
   });
-  
+
   afterEach(() => {
     process.env = originalEnv;
   });
