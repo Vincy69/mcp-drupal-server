@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "drupal-server": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "dist/index.js"
+      ],
+      "env": {
+        "DOCS_ONLY_MODE": "false",
+        "CACHE_TIMEOUT": "900000",
+        "API_TIMEOUT": "45000",
+        "MAX_RETRIES": "3"
+      }
+    }
+  }
+}

@@ -42,6 +42,15 @@ export class DrupalModuleGenerator {
     outputPath: string
   ): Promise<GeneratedFile[]> {
     const files: GeneratedFile[] = [];
+    
+    // Validate required parameters
+    if (!moduleInfo.machineName) {
+      throw new Error(`module_info.machine_name is required. Received: ${JSON.stringify(moduleInfo)}`);
+    }
+    if (!outputPath) {
+      throw new Error('output_path is required');
+    }
+    
     const modulePath = join(outputPath, moduleInfo.machineName);
 
     // Create module directory
@@ -854,7 +863,7 @@ function ${machineName}_form_alter(&$form, \\Drupal\\Core\\Form\\FormStateInterf
  * Implements ${hookName}().
  */
 function ${machineName}_${hookName.replace('hook_', '')}() {
-  // TODO: Implement ${hookName}.
+  // Implementation goes here.
 }
 
 `;

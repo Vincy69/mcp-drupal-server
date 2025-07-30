@@ -1,6 +1,6 @@
 {
   "name": "mcp-drupal-server",
-  "version": "1.0.0",
+  "version": "1.0.0-beta",
   "description": "Ultimate MCP server for Drupal CMS - Dynamic, Hybrid, Intelligent",
   "main": "dist/index.js",
   "type": "module",

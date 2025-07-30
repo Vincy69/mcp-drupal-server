@@ -1,36 +1,20 @@
 # 📚 Documentation MCP Drupal Server
 
-This directory contains comprehensive documentation for the MCP Drupal Server project.
+Documentation complète du serveur MCP Drupal.
 
-## 📁 Structure
+## 📖 Guides
 
-### 🔧 [Development](./development/)
-- **[DEVELOPMENT_PATTERNS.md](./development/DEVELOPMENT_PATTERNS.md)** - Patterns et bonnes pratiques de développement
-- **[CONTRIBUTING.md](./development/CONTRIBUTING.md)** - Guide de contribution au projet  
-- **[TEST_RESULTS.md](./development/TEST_RESULTS.md)** - Résultats et couverture des tests
+### [🚀 Quick Start](QUICK_START.md)
+Guide de démarrage rapide pour installation et premiers pas.
 
-### 🚀 [Deployment](./deployment/)
-- **[INSTALLATION.md](./deployment/INSTALLATION.md)** - Guide d'installation détaillé
-- **[DEPLOYMENT.md](./deployment/DEPLOYMENT.md)** - Guide de déploiement en production
-- **[MCP_ECOSYSTEM.md](./deployment/MCP_ECOSYSTEM.md)** - Configuration de l'écosystème MCP complet
-- **[ECOSYSTEM_SETUP.md](./deployment/ECOSYSTEM_SETUP.md)** - Configuration avancée de l'écosystème
+### [🔌 API Reference](API.md)  
+Documentation complète des 35+ outils disponibles.
 
-### 📖 [Examples](./examples/)
-- **[EXAMPLES_COMPARISON.md](./examples/EXAMPLES_COMPARISON.md)** - Comparaisons avant/après avec Claude Code
-- **[TUTORIALS.md](./examples/TUTORIALS.md)** - Tutoriels step-by-step
-
-### 🔌 [API](./api/)
-- **[API.md](./api/API.md)** - Documentation complète de l'API MCP
-
-## 🎯 Quick Start
-
-1. **Installation rapide** → [deployment/INSTALLATION.md](./deployment/INSTALLATION.md)
-2. **Premiers pas** → [examples/TUTORIALS.md](./examples/TUTORIALS.md)  
-3. **Contribution** → [development/CONTRIBUTING.md](./development/CONTRIBUTING.md)
-4. **API Reference** → [api/API.md](./api/API.md)
+### [🤝 Contributing](CONTRIBUTING.md)
+Guide pour contribuer au projet et développer des fonctionnalités.
 
 ## 🔗 Liens utiles
 
-- **Configuration Claude Code** → [../config/claude.md](../config/claude.md)
-- **Scripts d'installation** → [../scripts/](../scripts/)
+- **Configuration** → [../config/claude.md](../config/claude.md)
+- **Scripts** → [../scripts/](../scripts/)
 - **Tests** → [../tests/](../tests/)

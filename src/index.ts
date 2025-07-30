@@ -43,7 +43,7 @@ export class DrupalMCPServer {
     this.server = new Server(
       {
         name: "mcp-drupal-server",
-        version: "1.0.0",
+        version: "1.0.0-beta",
       },
       {
         capabilities: {
@@ -487,14 +487,16 @@ export class DrupalMCPServer {
             const options = args?.options as any || {};
             const outputPath = args?.output_path as string || './modules/custom';
             
-            // Set defaults
+            // Set defaults and transform snake_case to camelCase
             const fullModuleInfo = {
               packageName: 'Custom',
               version: '1.0.0',
               coreVersionRequirement: '^10.2 || ^11',
               dependencies: [],
               type: 'module',
-              ...moduleInfo
+              ...moduleInfo,
+              // Transform snake_case to camelCase for internal interface
+              machineName: moduleInfo?.machine_name || moduleInfo?.machineName
             };
             
             const fullOptions = {
@@ -776,7 +778,7 @@ export class DrupalMCPServer {
             // Simplified implementation
             const generatedCode = `<?php
 // Generated code based on: ${args?.description}
-// TODO: Implement based on context and project patterns
+// Implementation placeholder - to be expanded based on project context
 `;
             return { content: [{ type: "text", text: generatedCode }] };
           
